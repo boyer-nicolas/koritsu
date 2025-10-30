@@ -26,7 +26,7 @@ bun run dev
 
 Once the server is running, visit:
 
-- **Swagger UI**: http://localhost:3000/docs
+- **Swagger UI**: http://localhost:3000
 - **OpenAPI JSON**: http://localhost:3000/api-docs.json
 - **Health Check**: http://localhost:3000/healthz
 

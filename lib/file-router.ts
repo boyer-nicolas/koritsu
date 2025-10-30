@@ -16,9 +16,24 @@ interface RouteModule {
 
 const config = AppConfig.get();
 
+export type OpenAPISpec = {
+  openapi: string;
+  info: {
+    title: string;
+    description: string;
+    version: string;
+  };
+  servers: Array<{
+    url: string;
+    description: string;
+  }>;
+  paths: Record<string, unknown>;
+};
+
 export class FileRouter {
   private routes: Map<string, RouteModule> = new Map();
   private basePath: string;
+  public openapiSpec: OpenAPISpec;
 
   constructor(basePath: string = "./routes") {
     this.basePath = basePath;
@@ -265,20 +280,8 @@ export class FileRouter {
   /**
    * Generate OpenAPI specification from all spec files
    */
-  generateOpenAPISpec(): {
-    openapi: string;
-    info: {
-      title: string;
-      description: string;
-      version: string;
-    };
-    servers: Array<{
-      url: string;
-      description: string;
-    }>;
-    paths: Record<string, unknown>;
-  } {
-    const baseSpec = {
+  generateOpenAPISpec(): OpenAPISpec {
+    const baseSpec: OpenAPISpec = {
       openapi: "3.0.3",
       info: {
         title: config.title,
@@ -384,8 +387,9 @@ export class FileRouter {
     }
 
     if (pathname === "/api-docs.json") {
-      const openApiSpec = this.generateOpenAPISpec();
-      return Response.json(openApiSpec);
+      this.openapiSpec = this.generateOpenAPISpec();
+
+      return Response.json(this.openapiSpec);
     }
 
     return null;
