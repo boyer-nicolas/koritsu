@@ -32,17 +32,6 @@ Once the server is running, visit:
 - **OpenAPI JSON**: http://localhost:3000/api-docs.json
 - **Health Check**: http://localhost:3000/healthz
 
-## Project Structure
-
-```
-routes/
-  storage/
-    buckets/
-      route.ts    # HTTP handlers (GET, POST, etc.)
-      service.ts  # Business logic
-      spec.ts     # OpenAPI documentation
-```
-
 ## Creating Routes
 
 1. **Create a directory** under `routes/` (e.g., `routes/users/profile/`)
