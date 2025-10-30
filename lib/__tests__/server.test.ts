@@ -49,7 +49,7 @@ describe("server.ts", () => {
 
 			Server.handleShutdown();
 
-			expect(console.log).toHaveBeenCalledWith("Shutting down gracefully...");
+			expect(console.log).toHaveBeenCalledWith("==> Shutting down gracefully...");
 			expect(process.exit).toHaveBeenCalled();
 
 			// Restore
@@ -95,7 +95,7 @@ describe("server.ts", () => {
 
 			expect(Bun.serve).toHaveBeenCalled();
 			expect(console.log).toHaveBeenCalledWith(
-				"Server running at http://localhost:3000",
+				"==> Server running at http://localhost:3000",
 			);
 
 			// Restore

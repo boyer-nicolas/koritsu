@@ -6,8 +6,8 @@ export class Server {
 	private fileRouter: FileRouter;
 	static server?: Bun.Server<undefined>;
 
-	constructor() {
-		this.fileRouter = new FileRouter("./routes");
+	constructor(routesPath: string = "./routes") {
+		this.fileRouter = new FileRouter(routesPath);
 		this.config = AppConfig.get();
 	}
 
@@ -29,6 +29,7 @@ export class Server {
 			port: this.config.server.port,
 			hostname: this.config.server.host,
 			async fetch(request) {
+				const startTime = Date.now();
 				const url = new URL(request.url);
 
 				// Health check endpoint
@@ -45,19 +46,24 @@ export class Server {
 				}
 
 				// Use file-based router for all other requests
-				return await self.fileRouter.handleRequest(request);
+				const response = await self.fileRouter.handleRequest(request);
+				console.log(
+					`==> ${Bun.color("green", "ansi")}${request.method} ${Bun.color("cyan", "ansi")} ${url.pathname} ${Bun.color("white", "ansi")} - ${Date.now() - startTime}ms `,
+				);
+				return response;
 			},
 		};
 	}
 
 	async start() {
+		console.log("==> Starting server...");
 		const serverOptions = await this.init();
 		const server = Bun.serve(serverOptions);
-		console.log(`Server running at ${server.url}`);
+		console.log(`==> Server running at ${server.url}`);
 	}
 
 	public static handleShutdown() {
-		console.log("Shutting down gracefully...");
+		console.log("==> Shutting down gracefully...");
 		Server.server?.stop();
 		process.exit();
 	}
