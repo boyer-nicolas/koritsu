@@ -1,3 +1,5 @@
 bun run ./scripts/generate-env.ts
 bun run lint:fix
 bun run check
+
+git add .
