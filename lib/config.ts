@@ -1,24 +1,55 @@
 import Bun from "bun";
 import { z } from "zod";
 
+// Custom boolean coercion that properly handles string "false"
+const booleanFromString = z
+	.union([z.boolean(), z.string()])
+	.transform((val) => {
+		if (typeof val === "boolean") return val;
+		if (typeof val === "string") {
+			const lower = val.toLowerCase();
+			if (lower === "true" || lower === "1" || lower === "yes") return true;
+			if (lower === "false" || lower === "0" || lower === "no" || lower === "")
+				return false;
+			return Boolean(val);
+		}
+		return Boolean(val);
+	});
+
 export const ConfigSchema = z.object({
-	server: z.object({
-		port: z.number().min(1).max(65535).default(8080),
-		host: z.string().default("0.0.0.0"),
-		logLevel: z.enum(["debug", "info", "warn", "error"]).default("info"),
-	}),
-	swagger: z.object({
-		enabled: z.boolean().default(true),
-		path: z.string().default("/"),
-	}),
+	server: z
+		.object({
+			port: z.coerce.number().min(1).max(65535).default(8080),
+			host: z.string().default("0.0.0.0"),
+			logLevel: z.enum(["debug", "info", "warn", "error"]).default("info"),
+		})
+		.default({
+			port: 8080,
+			host: "0.0.0.0",
+			logLevel: "info" as const,
+		}),
+	swagger: z
+		.object({
+			enabled: booleanFromString.default(true),
+			path: z.string().default("/"),
+		})
+		.default({
+			enabled: true,
+			path: "/",
+		}),
 	title: z.string().default("My API"),
 	description: z
 		.string()
 		.default("Auto-generated API documentation from route specifications"),
-	auth: z.object({
-		enabled: z.boolean().default(false),
-		secret: z.string().min(10).default("changeme"),
-	}),
+	auth: z
+		.object({
+			enabled: booleanFromString.default(false),
+			secret: z.string().min(10).default("changeme"),
+		})
+		.default({
+			enabled: false,
+			secret: "changeme",
+		}),
 	environment: z
 		.enum(["development", "production", "test"])
 		.default("development"),
@@ -30,7 +61,7 @@ export type Config = z.infer<typeof ConfigSchema>;
 export class AppConfig {
 	private static instance: Config;
 
-	private static validateConfig(config: Partial<Config>): Config {
+	private static validateConfig(config: unknown): Config {
 		const result = ConfigSchema.safeParse(config);
 		if (!result.success) {
 			console.error("Configuration validation error:", result.error.format());
@@ -40,23 +71,41 @@ export class AppConfig {
 	}
 
 	static load(): void {
-		const rawConfig: Config = {
-			server: {
-				port: Bun.env.PORT,
-				host: Bun.env.HOST,
-				logLevel: Bun.env.LOG_LEVEL,
-			},
-			swagger: {
-				enabled: Bun.env.SWAGGER_ENABLED,
-				path: Bun.env.SWAGGER_PATH,
-			},
-			auth: {
-				enabled: Bun.env.AUTH_ENABLED,
-				secret: Bun.env.AUTH_SECRET,
-			},
-			title: Bun.env.API_TITLE,
-			description: Bun.env.API_DESCRIPTION,
-			environment: Bun.env.ENVIRONMENT,
+		const rawConfig: unknown = {
+			...(Bun.env.PORT || Bun.env.HOST || Bun.env.LOG_LEVEL
+				? {
+						server: {
+							...(Bun.env.PORT ? { port: Bun.env.PORT } : {}),
+							...(Bun.env.HOST ? { host: Bun.env.HOST } : {}),
+							...(Bun.env.LOG_LEVEL ? { logLevel: Bun.env.LOG_LEVEL } : {}),
+						},
+					}
+				: {}),
+			...(Bun.env.SWAGGER_ENABLED || Bun.env.SWAGGER_PATH
+				? {
+						swagger: {
+							...(Bun.env.SWAGGER_ENABLED
+								? { enabled: Bun.env.SWAGGER_ENABLED }
+								: {}),
+							...(Bun.env.SWAGGER_PATH ? { path: Bun.env.SWAGGER_PATH } : {}),
+						},
+					}
+				: {}),
+			...(Bun.env.AUTH_ENABLED || Bun.env.AUTH_SECRET
+				? {
+						auth: {
+							...(Bun.env.AUTH_ENABLED
+								? { enabled: Bun.env.AUTH_ENABLED }
+								: {}),
+							...(Bun.env.AUTH_SECRET ? { secret: Bun.env.AUTH_SECRET } : {}),
+						},
+					}
+				: {}),
+			...(Bun.env.API_TITLE ? { title: Bun.env.API_TITLE } : {}),
+			...(Bun.env.API_DESCRIPTION
+				? { description: Bun.env.API_DESCRIPTION }
+				: {}),
+			...(Bun.env.ENVIRONMENT ? { environment: Bun.env.ENVIRONMENT } : {}),
 		};
 
 		// Let Zod parse and apply defaults for any missing values

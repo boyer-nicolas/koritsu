@@ -42,7 +42,7 @@ export default defineSpec({
 				},
 			},
 			responses: {
-				"200": {
+				"201": {
 					description: "Bucket created successfully",
 					content: {
 						"application/json": {
