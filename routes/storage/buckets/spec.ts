@@ -1,4 +1,6 @@
-export const bucketSpec = {
+import type { OpenAPIV3_1 } from "openapi-types";
+
+export const bucketSpec: OpenAPIV3_1.PathsObject = {
 	"/storage/buckets": {
 		get: {
 			summary: "List all storage buckets",

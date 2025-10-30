@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import { dirname, join, relative, sep } from "node:path";
 import { AppConfig } from "@lib/config";
+import type { OpenAPIV3_1 } from "openapi-types";
 import packageJson from "../package.json";
 import type { Route } from "./route";
 
@@ -15,20 +16,6 @@ interface RouteModule {
 }
 
 const config = AppConfig.get();
-
-export type OpenAPISpec = {
-	openapi: string;
-	info: {
-		title: string;
-		description: string;
-		version: string;
-	};
-	servers: Array<{
-		url: string;
-		description: string;
-	}>;
-	paths: Record<string, unknown>;
-};
 
 export class FileRouter {
 	private routes: Map<string, RouteModule> = new Map();
@@ -279,9 +266,9 @@ export class FileRouter {
 	/**
 	 * Generate OpenAPI specification from all spec files
 	 */
-	generateOpenAPISpec(): OpenAPISpec {
-		const baseSpec: OpenAPISpec = {
-			openapi: "3.0.3",
+	generateOpenAPISpec(): OpenAPIV3_1.Document {
+		const baseSpec: OpenAPIV3_1.Document = {
+			openapi: "3.1.0",
 			info: {
 				title: config.title,
 				description: config.description,
@@ -289,11 +276,11 @@ export class FileRouter {
 			},
 			servers: [
 				{
-					url: `http://${config.server.host}:${config.server.port}`,
+					url: `http://localhost:${config.server.port}`,
 					description: "Development server",
 				},
 			],
-			paths: {} as Record<string, unknown>,
+			paths: {},
 		};
 
 		// Combine all spec files into the paths object
