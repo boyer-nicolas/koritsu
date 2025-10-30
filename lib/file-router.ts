@@ -51,8 +51,6 @@ export class FileRouter {
 	 */
 	private async scanDirectory(dirPath: string): Promise<void> {
 		try {
-			// Use Node.js fs APIs which are available in Bun
-
 			try {
 				await fs.access(dirPath);
 			} catch {

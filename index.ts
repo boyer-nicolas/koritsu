@@ -11,8 +11,12 @@ await fileRouter.discoverRoutes();
 await fileRouter.loadRoutes();
 
 // Log discovered routes for debugging
-console.debug("Discovered routes:");
-console.debug(fileRouter.getRouteInfo());
+if (config.server.logLevel === "debug") {
+	console.debug("Discovered routes:");
+	console.debug(fileRouter.getRouteInfo());
+
+	console.log("Coniguration:", JSON.stringify(config, null, 2));
+}
 
 const server = Bun.serve({
 	port: config.server.port,
@@ -36,4 +40,17 @@ const server = Bun.serve({
 	},
 });
 
+function handleShutdown() {
+	console.log("Shutting down gracefully...");
+	server.stop();
+	process.exit();
+}
+
 console.log(`Server running at ${server.url}`);
+
+process.on("SIGINT", () => {
+	handleShutdown();
+});
+process.on("SIGTERM", () => {
+	handleShutdown();
+});
