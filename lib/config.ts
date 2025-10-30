@@ -1,5 +1,5 @@
-import { z } from "zod";
 import Bun from "bun";
+import { z } from "zod";
 
 export const ConfigSchema = z.object({
 	server: z.object({
