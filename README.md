@@ -1,4 +1,4 @@
-# File-based Router Framework
+# [Ombrage API](https://www.npmjs.com/package/ombrage-api)
 
 A powerful file-based routing system built with Bun, featuring automatic API documentation generation with Swagger UI.
 
