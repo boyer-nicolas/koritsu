@@ -83,8 +83,11 @@ Once the server is running, visit:
    ```
 
 4. **Add API documentation** in `spec.ts`:
+
    ```typescript
-   export const profileSpec = {
+   import { defineSpec } from "ombrage-api";
+
+   export const profileSpec = defineSpec({
      get: {
        summary: "Get user profile",
        responses: {
@@ -104,7 +107,7 @@ Once the server is running, visit:
          },
        },
      },
-   };
+   });
    ```
 
 The route will be automatically available at `/users/profile` with full Swagger documentation!
