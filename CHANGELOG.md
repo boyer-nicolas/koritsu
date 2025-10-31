@@ -1,6 +1,10 @@
 # Changelog
 
 
+## v1.5.4
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-api/compare/v1.5.3...v1.5.4)
+
 ## v1.5.3
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-api/compare/v1.5.2...v1.5.3)
