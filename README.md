@@ -12,16 +12,10 @@ A powerful file-based routing system built with Bun, featuring automatic API doc
 - 🔄 **Hot reload**: Development server with instant updates
 - 🛡️ **JSON error responses**: Consistent error handling with structured responses
 
-## Installation
+## Getting Started
 
 ```bash
-bun install
-```
-
-## Development
-
-```bash
-bun run dev
+bun install ombrage-api
 ```
 
 ## API Documentation

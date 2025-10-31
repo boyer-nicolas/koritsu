@@ -1,4 +1,4 @@
-import { createRoute } from "../../../../";
+import { createRoute } from "ombrage-api";
 import { createBucket } from "./service";
 import spec from "./spec";
 
