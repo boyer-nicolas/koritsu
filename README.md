@@ -14,17 +14,47 @@ A powerful file-based routing system built with Bun, featuring automatic API doc
 
 ## Getting Started
 
+1. Install the package
+
 ```bash
 bun install ombrage-api
+```
+
+2. Create the server entry point
+
+```typescript
+// index.ts
+import { Server } from "ombrage-api";
+
+new Server("./routes").start();
+```
+
+3. Create your first route
+
+```typescript
+// routes/hello/route.ts
+import { createRoute } from "ombrage-api/helpers";
+export const GET = createRoute({
+  method: "GET",
+  callback: async () => {
+    return Response.json({ message: "Hello, world!" });
+  },
+});
+```
+
+4. Run the server
+
+```bash
+bun run index.ts
 ```
 
 ## API Documentation
 
 Once the server is running, visit:
 
-- **Swagger UI**: http://localhost:3000
-- **OpenAPI JSON**: http://localhost:3000/api-docs.json
-- **Health Check**: http://localhost:3000/healthz
+- **Swagger UI**: http://localhost:8080
+- **OpenAPI JSON**: http://localhost:8080/api-docs.json
+- **Health Check**: http://localhost:8080/healthz
 
 ## Creating Routes
 
@@ -32,9 +62,9 @@ Once the server is running, visit:
 2. **Add route handlers** in `route.ts`:
 
    ```typescript
-   import { createRoute } from "@lib/helpers";
-   import { getProfile } from "@routes/users/profile/service";
-   import spec from "@routes/users/profile/spec";
+   import { createRoute } from "ombrage-api";
+   import { getProfile } from "./service";
+   import spec from "./spec";
 
    export const GET = createRoute({
      method: "GET",
