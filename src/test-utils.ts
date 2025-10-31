@@ -46,7 +46,7 @@ export function createMockRequest(
  * Mock route handler for tests
  */
 export function createMockRouteHandler(responseBody?: unknown) {
-	return mock(async ({ request }: { request: Request }) => {
+	return mock(async () => {
 		if (responseBody) {
 			return Response.json(responseBody);
 		}

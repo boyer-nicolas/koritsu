@@ -16,8 +16,8 @@ interface RouteModule {
 const config = AppConfig.get();
 
 export class FileRouter {
-	private routes: Map<string, RouteModule> = new Map();
-	private basePath: string;
+	public routes: Map<string, RouteModule> = new Map();
+	public basePath: string;
 
 	constructor(basePath: string = "./routes") {
 		this.basePath = basePath;

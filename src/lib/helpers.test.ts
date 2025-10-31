@@ -10,7 +10,7 @@ import {
 describe("helpers.ts", () => {
 	describe("createRoute", () => {
 		test("should create a route object with method and callback", () => {
-			const mockCallback = async ({ request }: RouteProps) => {
+			const mockCallback = async () => {
 				return new Response("test");
 			};
 

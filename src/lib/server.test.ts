@@ -45,6 +45,7 @@ describe("server.ts", () => {
 			const originalExit = process.exit;
 
 			console.log = mock(() => {});
+			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			process.exit = mock(() => {}) as any;
 
 			Server.handleShutdown();
@@ -61,12 +62,14 @@ describe("server.ts", () => {
 
 		test("should stop server if it exists", () => {
 			const mockStop = mock(() => {});
+			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			Server.server = { stop: mockStop } as any;
 
 			const originalLog = console.log;
 			const originalExit = process.exit;
 
 			console.log = mock(() => {});
+			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			process.exit = mock(() => {}) as any;
 
 			Server.handleShutdown();
@@ -90,6 +93,7 @@ describe("server.ts", () => {
 			const originalServe = Bun.serve;
 			const originalLog = console.log;
 
+			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			Bun.serve = mock(() => mockServer) as any;
 			console.log = mock(() => {});
 

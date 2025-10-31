@@ -23,7 +23,7 @@ describe("router.ts", () => {
 		test("should handle GET request successfully", async () => {
 			const mockCallback = mock(async () => new Response("Hello World"));
 
-			router["routes"].set("/test", {
+			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
@@ -46,7 +46,7 @@ describe("router.ts", () => {
 				return Response.json({ received: body });
 			});
 
-			router["routes"].set("/api/users", {
+			router.routes.set("/api/users", {
 				path: "/api/users",
 				routeFile: "/path/to/route.ts",
 				routes: {
@@ -83,7 +83,7 @@ describe("router.ts", () => {
 		});
 
 		test("should return 405 for unsupported HTTP method", async () => {
-			router["routes"].set("/test", {
+			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
@@ -109,7 +109,7 @@ describe("router.ts", () => {
 		});
 
 		test("should return 405 when route has no callback", async () => {
-			router["routes"].set("/test", {
+			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
@@ -136,7 +136,7 @@ describe("router.ts", () => {
 				throw new Error("Handler error");
 			});
 
-			router["routes"].set("/test", {
+			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
@@ -161,7 +161,7 @@ describe("router.ts", () => {
 		test("should find best matching route for nested paths", async () => {
 			const callback = mock(async () => new Response("Found"));
 
-			router["routes"].set("/api/users", {
+			router.routes.set("/api/users", {
 				path: "/api/users",
 				routeFile: "/path/to/route.ts",
 				routes: {
@@ -201,7 +201,7 @@ describe("router.ts", () => {
 				},
 			};
 
-			router["routes"].set("/test", {
+			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				spec: mockSpec,
@@ -226,7 +226,7 @@ describe("router.ts", () => {
 				},
 			};
 
-			router["routes"].set("/test", {
+			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				spec: mockSpec,
@@ -281,13 +281,13 @@ describe("router.ts", () => {
 
 	describe("getRouteInfo", () => {
 		test("should return route information for debugging", () => {
-			router["routes"].set("/test", {
+			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				serviceFile: "/path/to/service.ts",
 				specFile: "/path/to/spec.ts",
 			});
-			router["routes"].set("/test2", {
+			router.routes.set("/test2", {
 				path: "/test2",
 				routeFile: "/path/to/route2.ts",
 			});
@@ -333,9 +333,8 @@ describe("router.ts", () => {
 	describe("path matching", () => {
 		test("should match exact paths first", async () => {
 			const exactCallback = mock(async () => new Response("Exact match"));
-			const parentCallback = mock(async () => new Response("Parent match"));
 
-			router["routes"].set("/api/users", {
+			router.routes.set("/api/users", {
 				path: "/api/users",
 				routeFile: "/path/to/route.ts",
 				routes: {
@@ -354,7 +353,7 @@ describe("router.ts", () => {
 		test("should fall back to parent route when exact match not found", async () => {
 			const parentCallback = mock(async () => new Response("Parent match"));
 
-			router["routes"].set("/api", {
+			router.routes.set("/api", {
 				path: "/api",
 				routeFile: "/path/to/route.ts",
 				routes: {
