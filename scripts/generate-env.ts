@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 
-const envDocPath = "./docs/env.md";
+const envDocPath = "./env.md";
 
 export async function generateEnvDocumentation(): Promise<string> {
 	console.log("Generating environment variable documentation...");

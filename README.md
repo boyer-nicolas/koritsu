@@ -111,6 +111,6 @@ Once the server is running, visit:
 
 The route will be automatically available at `/users/profile` with full Swagger documentation!
 
-## Runtime
+## Environment Variables
 
-This project was created using `bun init` in bun v1.3.0. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+[See Environment Variables Documentation](./env.md)
