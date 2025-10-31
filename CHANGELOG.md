@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.7.1
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-api/compare/v1.7.0...v1.7.1)
+
+### 🏡 Chore
+
+- Changelogen bump instead of minor each time ([9c3a7fb](https://github.com/boyer-nicolas/ombrage-api/commit/9c3a7fb))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v1.7.0
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-api/compare/v1.6.0...v1.7.0)
