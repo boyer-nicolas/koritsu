@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.7.0
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-api/compare/v1.6.0...v1.7.0)
+
+### 🚀 Enhancements
+
+- License ([c653c23](https://github.com/boyer-nicolas/ombrage-api/commit/c653c23))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v1.6.0
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-api/compare/v1.5.4...v1.6.0)
