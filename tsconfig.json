@@ -43,5 +43,6 @@
     "tests/unit/router.test.ts",
     "tests/unit/server.test.ts",
     "tests/unit/spec-validation.test.ts"
-  ]
+  ],
+  "exclude": ["node_modules", "dist"]
 }
