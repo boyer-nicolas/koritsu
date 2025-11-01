@@ -222,8 +222,8 @@ describe("server.ts", () => {
 			const server = new Server(routesDir);
 
 			// Test 404 responses
-			const originalHandleRequest404 = server["fileRouter"].handleRequest;
-			server["fileRouter"].handleRequest = mock(
+			const originalHandleRequest404 = server.fileRouter.handleRequest;
+			server.fileRouter.handleRequest = mock(
 				async () => new Response("Not Found", { status: 404 }),
 			);
 
@@ -231,7 +231,7 @@ describe("server.ts", () => {
 			expect(options.fetch).toBeDefined();
 
 			// Test 4xx responses
-			server["fileRouter"].handleRequest = mock(
+			server.fileRouter.handleRequest = mock(
 				async () => new Response("Bad Request", { status: 400 }),
 			);
 
@@ -239,7 +239,7 @@ describe("server.ts", () => {
 			expect(options.fetch).toBeDefined();
 
 			// Test successful responses
-			server["fileRouter"].handleRequest = mock(
+			server.fileRouter.handleRequest = mock(
 				async () => new Response("OK", { status: 200 }),
 			);
 
@@ -247,7 +247,7 @@ describe("server.ts", () => {
 			expect(options.fetch).toBeDefined();
 
 			// Restore
-			server["fileRouter"].handleRequest = originalHandleRequest404;
+			server.fileRouter.handleRequest = originalHandleRequest404;
 			console.log = originalLog;
 		});
 
@@ -256,15 +256,15 @@ describe("server.ts", () => {
 			const options = await server.init();
 
 			// Mock swagger response
-			const originalHandleSwagger = server["fileRouter"].handleSwaggerRequest;
-			server["fileRouter"].handleSwaggerRequest = mock(
+			const originalHandleSwagger = server.fileRouter.handleSwaggerRequest;
+			server.fileRouter.handleSwaggerRequest = mock(
 				() => new Response("swagger", { status: 200 }),
 			);
 
 			expect(options.fetch).toBeDefined();
 
 			// Restore
-			server["fileRouter"].handleSwaggerRequest = originalHandleSwagger;
+			server.fileRouter.handleSwaggerRequest = originalHandleSwagger;
 		});
 	});
 

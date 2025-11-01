@@ -301,12 +301,18 @@ describe("router.ts", () => {
 		});
 
 		test("should include route specs in generated OpenAPI spec", () => {
-			const mockSpec = {
-				get: {
-					summary: "Test endpoint",
-					responses: {
-						"200": {
-							description: "Success",
+			const mockRoutes = {
+				GET: {
+					method: "GET",
+					callback: async () => Response.json({}),
+					spec: {
+						format: "json",
+						responses: {
+							200: {
+								summary: "Test endpoint",
+								description: "Success",
+								schema: { type: "object" },
+							},
 						},
 					},
 				},
@@ -315,23 +321,31 @@ describe("router.ts", () => {
 			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
-				spec: mockSpec,
+				routes: mockRoutes,
 			});
 
 			const spec = router.generateOpenAPISpec();
 
-			expect(spec.paths).toMatchObject({
-				"/test": mockSpec,
-			});
+			expect(spec.paths).toBeDefined();
+			if (spec.paths) {
+				expect(spec.paths).toHaveProperty("/test");
+				expect(spec.paths["/test"]).toHaveProperty("get");
+			}
 		});
 
 		test("should add 500 error response to operations without one", () => {
-			const mockSpec = {
-				get: {
-					summary: "Test endpoint",
-					responses: {
-						"200": {
-							description: "Success",
+			const mockRoutes = {
+				GET: {
+					method: "GET",
+					callback: async () => Response.json({}),
+					spec: {
+						format: "json",
+						responses: {
+							200: {
+								summary: "Test endpoint",
+								description: "Success",
+								schema: { type: "object" },
+							},
 						},
 					},
 				},
@@ -340,7 +354,7 @@ describe("router.ts", () => {
 			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
-				spec: mockSpec,
+				routes: mockRoutes,
 			});
 
 			const spec = router.generateOpenAPISpec();
@@ -392,14 +406,38 @@ describe("router.ts", () => {
 
 	describe("getRouteInfo", () => {
 		test("should return route information for debugging", () => {
+			const mockRoutesWithSpec = {
+				GET: {
+					method: "GET",
+					callback: async () => Response.json({}),
+					spec: {
+						format: "json",
+						responses: {
+							200: {
+								summary: "Test endpoint",
+								description: "Success",
+								schema: { type: "object" },
+							},
+						},
+					},
+				},
+			};
+
 			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
-				specFile: "/path/to/spec.ts",
+				routes: mockRoutesWithSpec,
 			});
 			router.routes.set("/test2", {
 				path: "/test2",
 				routeFile: "/path/to/route2.ts",
+				routes: {
+					GET: {
+						method: "GET",
+						callback: async () => Response.json({}),
+						// No spec
+					},
+				},
 			});
 
 			const routeInfo = router.getRouteInfo();

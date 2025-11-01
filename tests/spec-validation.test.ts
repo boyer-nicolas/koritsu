@@ -1,12 +1,18 @@
 import { describe, expect, test } from "bun:test";
-import { createRoute } from "../src/lib/helpers";
+import z from "zod";
+import { createRoute, type SpecItem } from "../src/lib/helpers";
 
 describe("createRoute with spec validation", () => {
 	test("should throw error when response status doesn't match spec", async () => {
-		const mockSpec = {
+		const mockSpec: SpecItem = {
+			format: "json",
 			responses: {
-				"201": {
+				201: {
+					summary: "Created",
 					description: "Created successfully",
+					schema: z.object({
+						success: z.boolean(),
+					}),
 				},
 			},
 		};
@@ -25,18 +31,22 @@ describe("createRoute with spec validation", () => {
 		// This should throw an error in development environment
 		process.env.ENVIRONMENT = "development";
 
-		await expect(async () => {
-			if (route.callback) {
-				await route.callback({ request });
-			}
-		}).toThrow();
+		// Test the callback directly as an async function
+		if (route.callback) {
+			await expect(route.callback({ request })).rejects.toThrow();
+		}
 	});
 
 	test("should not throw error when response status matches spec", async () => {
-		const mockSpec = {
+		const mockSpec: SpecItem = {
+			format: "json",
 			responses: {
 				"200": {
-					description: "Success",
+					summary: "Success",
+					description: "Success response",
+					schema: z.object({
+						success: z.boolean(),
+					}),
 				},
 			},
 		};

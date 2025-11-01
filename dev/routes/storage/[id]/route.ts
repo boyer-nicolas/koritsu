@@ -1,6 +1,6 @@
-import { getBucketById } from "@dev/lib/storage";
+import { getBucketById, singleBucketSchema } from "@dev/lib/storage";
 import { createRoute } from "src";
-import { spec } from "./spec";
+import { z } from "zod";
 
 export const GET = createRoute({
 	method: "GET",
@@ -17,5 +17,26 @@ export const GET = createRoute({
 
 		return Response.json(bucket);
 	},
-	spec: spec.get,
+	spec: {
+		format: "json",
+		parameters: {
+			path: z.object({
+				id: z.string().describe("The bucket ID"),
+			}),
+		},
+		responses: {
+			200: {
+				summary: "Storage bucket details",
+				description: "Details of the storage bucket",
+				schema: singleBucketSchema,
+			},
+			404: {
+				summary: "Bucket not found",
+				description: "The requested bucket was not found",
+				schema: z.object({
+					error: z.string().default("Bucket not found"),
+				}),
+			},
+		},
+	},
 });

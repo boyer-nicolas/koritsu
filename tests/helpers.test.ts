@@ -31,6 +31,7 @@ describe("helpers.ts", () => {
 			expect(result).toEqual({
 				method: "GET",
 				callback: mockCallback,
+				spec: undefined,
 			});
 		});
 
@@ -44,6 +45,7 @@ describe("helpers.ts", () => {
 			expect(result).toEqual({
 				method: "POST",
 				callback: undefined,
+				spec: undefined,
 			});
 		});
 
@@ -486,12 +488,25 @@ describe("helpers.ts", () => {
 
 	describe("response validation", () => {
 		test("should validate response status against spec", () => {
-			const spec = {
+			const spec: SpecItem = {
+				format: "json",
 				responses: {
-					"200": { description: "OK" },
-					"404": { description: "Not Found" },
+					200: {
+						summary: "OK",
+						description: "OK",
+						schema: z.object({
+							message: z.string(),
+						}),
+					},
+					404: {
+						summary: "Not Found",
+						description: "Not Found",
+						schema: z.object({
+							message: z.string(),
+						}),
+					},
 				},
-			} as OpenAPIV3_1.OperationObject;
+			};
 
 			// Valid response
 			const okResponse = new Response("OK", { status: 200 });
@@ -506,11 +521,18 @@ describe("helpers.ts", () => {
 		});
 
 		test("should throw error for invalid response status", () => {
-			const spec = {
+			const spec: SpecItem = {
+				format: "json",
 				responses: {
-					"200": { description: "OK" },
+					200: {
+						summary: "OK",
+						description: "OK",
+						schema: z.object({
+							message: z.string(),
+						}),
+					},
 				},
-			} as OpenAPIV3_1.OperationObject;
+			};
 
 			// We can test this by examining the error throwing in spec validation
 			expect(() => {
@@ -523,35 +545,19 @@ describe("helpers.ts", () => {
 			}).not.toThrow(); // The route creation doesn't throw, validation happens at runtime
 		});
 
-		test("should handle default responses in validation", () => {
-			const spec = {
-				responses: {
-					"200": { description: "OK" },
-					default: { description: "Default response" },
-				},
-			} as OpenAPIV3_1.OperationObject;
-
-			const defaultResponse = new Response("Error", { status: 500 });
-			expect(() => {
-				createRoute({
-					method: "GET",
-					callback: async () => defaultResponse,
-					spec: spec,
-				});
-			}).not.toThrow();
-		});
-
 		test("should validate content types", () => {
-			const spec = {
+			const spec: SpecItem = {
+				format: "json",
 				responses: {
-					"200": {
+					200: {
+						summary: "OK",
 						description: "OK",
-						content: {
-							"application/json": { schema: {} },
-						},
+						schema: z.object({
+							message: z.string(),
+						}),
 					},
 				},
-			} as OpenAPIV3_1.OperationObject;
+			};
 
 			const jsonResponse = new Response(JSON.stringify({ data: "test" }), {
 				status: 200,

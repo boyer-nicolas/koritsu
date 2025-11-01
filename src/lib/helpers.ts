@@ -340,9 +340,15 @@ export type CreateRouteProps = {
 	spec?: SpecItem;
 };
 
+export type RouteDefinition = {
+	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+	callback?: (props: RouteProps) => Promise<Response>;
+	spec?: SpecItem;
+};
+
 export function createRoute({ method, callback, spec }: CreateRouteProps) {
 	if (!callback) {
-		return { method, callback };
+		return { method, callback, spec };
 	}
 
 	// If spec is provided, wrap the callback with validation
@@ -376,7 +382,29 @@ export function createRoute({ method, callback, spec }: CreateRouteProps) {
 			}
 		: callback;
 
-	return { method, callback: wrappedCallback };
+	return { method, callback: wrappedCallback, spec };
+}
+
+/**
+ * Helper function to create route collections with multiple methods
+ * This allows organizing multiple HTTP methods for the same path in one place
+ */
+export function createRouteCollection(
+	routes: Record<string, CreateRouteProps>,
+): Record<string, RouteDefinition> {
+	const collection: Record<string, RouteDefinition> = {};
+
+	for (const [methodName, routeProps] of Object.entries(routes)) {
+		const method = methodName.toUpperCase() as
+			| "GET"
+			| "POST"
+			| "PUT"
+			| "DELETE"
+			| "PATCH";
+		collection[method] = createRoute({ ...routeProps, method });
+	}
+
+	return collection;
 }
 function validateResponseAgainstSpec(
 	response: Response,
@@ -391,7 +419,11 @@ function validateResponseAgainstSpec(
 	const specResponse = spec.responses[statusCode];
 
 	if (!specResponse) {
-		return;
+		// Status code not defined in spec - this is an error
+		const allowedStatusCodes = Object.keys(spec.responses).join(", ");
+		throw new Error(
+			`Response status ${statusCode} not defined in spec for ${method.toUpperCase()}. Allowed status codes: ${allowedStatusCodes}`,
+		);
 	}
 
 	// Validate Content-Type if specified in the spec;
@@ -413,7 +445,7 @@ function validateResponseAgainstSpec(
 			);
 
 			if (!isValidContentType) {
-				console.warn(
+				throw new Error(
 					`Response Content-Type "${contentType}" does not match expected types in spec: ${expectedContentTypes.join(", ")} for ${method.toUpperCase()} ${statusCode} response`,
 				);
 			}

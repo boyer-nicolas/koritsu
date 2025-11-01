@@ -61,8 +61,8 @@ Once the server is running, visit:
 
    ```typescript
    import { createRoute } from "ombrage-api";
-   import { getProfile } from "./service";
-   import spec from "./spec";
+   import { getProfile, profileSchema } from "../lib/service";
+   import { z } from "zod";
 
    export const GET = createRoute({
      method: "GET",
@@ -70,45 +70,33 @@ Once the server is running, visit:
        const profile = await getProfile();
        return Response.json(profile);
      },
-     spec: spec.get,
-   });
-   ```
-
-3. **Add business logic** in `service.ts`:
-
-   ```typescript
-   export async function getProfile() {
-     return { id: 1, name: "John Doe" };
-   }
-   ```
-
-4. **Add API documentation** in `spec.ts`:
-
-   ```typescript
-   import { defineSpec } from "ombrage-api";
-   import { z } from "zod";
-
-   export default defineSpec({
-     get: {
-       summary: "Get user profile",
-       responses: {
-         "200": {
-           description: "User profile data",
-           content: {
-             "application/json": {
-               schema: {
-                 type: "object",
-                 properties: {
-                   id: { type: "number" },
-                   name: { type: "string" },
-                 },
-               },
-             },
-           },
-         },
-       },
+     spec: {
+      format: "json",
+      responses: {
+        200: {
+          summary: "User Profile",
+          description: "User profile retrieved successfully",
+          schema: profileSchema, // Zod schema for automatic documentation
+      }
      },
    });
+   ```
+
+3. **Add business logic** in `../lib/service.ts`:
+
+   ```typescript
+   import { z } from "zod";
+
+   export const profileSchema = z.object({
+     id: z.number().description("User ID"),
+     name: z.string().description("User name"),
+   });
+
+   export type Profile = z.infer<typeof profileSchema>;
+
+   export async function getProfile(): Profile {
+     return { id: 1, name: "John Doe" };
+   }
    ```
 
 The route will be automatically available at `/users/profile` with full Swagger documentation!

@@ -3,14 +3,16 @@ import { dirname, join, relative, sep } from "node:path";
 import { AppConfig } from "@lib/config";
 import type { OpenAPIV3_1 } from "openapi-types";
 import packageJson from "../../package.json";
-import { type CustomSpec, generateOpenAPIFromCustomSpec } from "./helpers";
+import {
+	type CustomSpec,
+	generateOpenAPIFromCustomSpec,
+	type SpecItem,
+} from "./helpers";
 
 interface RouteModule {
 	path: string;
 	routeFile?: string;
-	specFile?: string;
 	routes?: Record<string, unknown>;
-	spec?: unknown;
 }
 
 const config = AppConfig.get();
@@ -49,10 +51,7 @@ export class FileRouter {
 
 				if (entry.isDirectory()) {
 					await this.scanDirectory(fullPath);
-				} else if (
-					entry.isFile() &&
-					(entry.name === "route.ts" || entry.name === "spec.ts")
-				) {
+				} else if (entry.isFile() && entry.name === "route.ts") {
 					await this.processRouteFile(fullPath, entry.name);
 				}
 			}
@@ -77,14 +76,9 @@ export class FileRouter {
 			this.routes.set(routePath, routeModule);
 		}
 
-		// Set the file path based on the file type
-		switch (fileName) {
-			case "route.ts":
-				routeModule.routeFile = filePath;
-				break;
-			case "spec.ts":
-				routeModule.specFile = filePath;
-				break;
+		// Set the file path for route files only
+		if (fileName === "route.ts") {
+			routeModule.routeFile = filePath;
 		}
 	}
 
@@ -159,13 +153,6 @@ export class FileRouter {
 	 * Load a specific route module
 	 */
 	private async loadRouteModule(routeModule: RouteModule): Promise<void> {
-		// Load spec if it exists
-		if (routeModule.specFile) {
-			const specModule = await import(routeModule.specFile);
-			// Get the default export or first exported object
-			routeModule.spec = specModule.default || this.getSpecData(specModule);
-		}
-
 		// Load route functions if route file exists
 		if (routeModule.routeFile) {
 			const routeModuleImport = await import(routeModule.routeFile);
@@ -327,12 +314,26 @@ export class FileRouter {
 		return Array.from(this.routes.entries()).map(([path, module]) => ({
 			path,
 			hasRoute: !!module.routeFile,
-			hasSpec: !!module.specFile,
+			hasSpec: this.hasInlineSpec(module),
 		}));
 	}
 
 	/**
-	 * Generate OpenAPI specification from all spec files
+	 * Check if a route module has inline specs
+	 */
+	private hasInlineSpec(routeModule: RouteModule): boolean {
+		if (!routeModule.routes) return false;
+
+		for (const route of Object.values(routeModule.routes)) {
+			if (route && typeof route === "object" && "spec" in route && route.spec) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Generate OpenAPI specification from inline specs in route files
 	 */
 	generateOpenAPISpec(): OpenAPIV3_1.Document {
 		const baseSpec: OpenAPIV3_1.Document = {
@@ -351,69 +352,124 @@ export class FileRouter {
 			paths: {},
 		};
 
-		// Combine all spec files into the paths object
+		// Extract specs from route definitions
 		for (const [path, routeModule] of this.routes) {
-			if (routeModule.spec) {
+			if (routeModule.routes) {
 				try {
-					// Check if this is a CustomSpec (from newSpec) or traditional OpenAPI spec
-					const specData = routeModule.spec;
+					const methodSpecs: Record<string, unknown> = {};
 
-					if (this.isCustomSpec(specData)) {
-						// Convert CustomSpec to OpenAPI format
-						const openAPIFromCustom = generateOpenAPIFromCustomSpec(
-							specData as CustomSpec,
-							{
-								title: config.title,
-								version: packageJson.version,
-								description: config.description,
-							},
-						);
+					// Iterate through all exported route handlers
+					for (const [exportName, routeHandler] of Object.entries(
+						routeModule.routes,
+					)) {
+						// Skip non-HTTP method exports
+						const httpMethod = exportName.toLowerCase();
+						if (
+							![
+								"get",
+								"post",
+								"put",
+								"delete",
+								"patch",
+								"head",
+								"options",
+							].includes(httpMethod)
+						) {
+							continue;
+						}
 
-						// Merge the paths from the converted spec
-						if (openAPIFromCustom.paths) {
-							for (const [specPath, pathItem] of Object.entries(
-								openAPIFromCustom.paths,
-							)) {
-								// Use the route path instead of the default "/"
-								let actualPath = specPath === "/" ? path : path + specPath;
-								// Convert [param] syntax to {param} for OpenAPI
-								actualPath = actualPath.replace(/\[([^\]]+)\]/g, "{$1}");
-								if (!baseSpec.paths[actualPath]) {
-									baseSpec.paths[actualPath] = {};
-								}
-								if (pathItem && baseSpec.paths[actualPath]) {
-									Object.assign(
-										baseSpec.paths[actualPath] as Record<string, unknown>,
-										pathItem,
-									);
-								}
+						// Check if this route handler has a spec
+						if (
+							routeHandler &&
+							typeof routeHandler === "object" &&
+							"spec" in routeHandler
+						) {
+							const spec = (routeHandler as { spec?: unknown }).spec;
+							if (spec) {
+								methodSpecs[httpMethod] = spec;
 							}
 						}
-					} else if (specData && typeof specData === "object") {
-						// Handle traditional OpenAPI spec format
-						const processedSpecData = JSON.parse(JSON.stringify(specData));
+					}
 
-						// Add 500 response to all operations if not already defined
-						for (const method in processedSpecData as Record<string, unknown>) {
-							const operation = (processedSpecData as Record<string, unknown>)[
-								method
-							] as Record<string, unknown> & {
-								responses?: Record<string, unknown>;
-							};
-							if (!operation.responses || !operation.responses["500"]) {
-								if (!operation.responses) {
-									operation.responses = {};
+					// If we found any specs, process them
+					if (Object.keys(methodSpecs).length > 0) {
+						this.processInlineSpecs(path, methodSpecs, baseSpec);
+					}
+				} catch (error) {
+					console.warn(
+						`Failed to process inline specs for route ${path}:`,
+						error,
+					);
+				}
+			}
+		}
+
+		return baseSpec;
+	}
+
+	/**
+	 * Process inline specs and add them to the OpenAPI document
+	 */
+	private processInlineSpecs(
+		routePath: string,
+		methodSpecs: Record<string, unknown>,
+		baseSpec: OpenAPIV3_1.Document,
+	): void {
+		// Create a CustomSpec-like object from the method specs
+		const customSpec: CustomSpec = {};
+
+		for (const [method, spec] of Object.entries(methodSpecs)) {
+			if (spec && typeof spec === "object") {
+				customSpec[method] = spec as SpecItem;
+			}
+		}
+
+		if (Object.keys(customSpec).length === 0) {
+			return;
+		}
+
+		// Convert CustomSpec to OpenAPI format
+		const openAPIFromCustom = generateOpenAPIFromCustomSpec(customSpec, {
+			title: config.title,
+			version: packageJson.version,
+			description: config.description,
+		});
+
+		// Merge the paths from the converted spec
+		if (openAPIFromCustom.paths && baseSpec.paths) {
+			for (const [specPath, pathItem] of Object.entries(
+				openAPIFromCustom.paths,
+			)) {
+				// Use the route path instead of the default "/"
+				let actualPath = specPath === "/" ? routePath : routePath + specPath;
+				// Convert [param] syntax to {param} for OpenAPI
+				actualPath = actualPath.replace(/\[([^\]]+)\]/g, "{$1}");
+
+				if (!baseSpec.paths[actualPath]) {
+					baseSpec.paths[actualPath] = {};
+				}
+
+				if (pathItem && baseSpec.paths[actualPath]) {
+					// Add 500 response to all operations if not already defined
+					for (const [, operation] of Object.entries(pathItem)) {
+						if (
+							operation &&
+							typeof operation === "object" &&
+							"responses" in operation
+						) {
+							const op = operation as { responses?: Record<string, unknown> };
+							if (!op.responses || !op.responses["500"]) {
+								if (!op.responses) {
+									op.responses = {};
 								}
-								operation.responses["500"] = {
+								op.responses["500"] = {
 									description: "Internal server error",
 									content: {
 										"application/json": {
 											schema: {
 												type: "object",
 												properties: {
-													error: {
-														type: "string",
-													},
+													error: { type: "string" },
 													message: {
 														type: "string",
 														default: "An unexpected error occurred",
@@ -425,70 +481,15 @@ export class FileRouter {
 								};
 							}
 						}
-
-						// Use the folder structure path as the OpenAPI path
-						if (!baseSpec.paths[path]) {
-							baseSpec.paths[path] = {};
-						}
-						Object.assign(baseSpec.paths[path], processedSpecData);
 					}
-				} catch (error) {
-					console.warn(`Failed to process spec for route ${path}:`, error);
+
+					Object.assign(
+						baseSpec.paths[actualPath] as Record<string, unknown>,
+						pathItem,
+					);
 				}
 			}
 		}
-
-		return baseSpec;
-	}
-
-	/**
-	 * Check if a spec is in CustomSpec format (from newSpec function)
-	 */
-	private isCustomSpec(spec: unknown): boolean {
-		if (!spec || typeof spec !== "object") {
-			return false;
-		}
-
-		const specObj = spec as Record<string, unknown>;
-
-		// Check if it has HTTP methods as keys with CustomSpec structure
-		for (const key of Object.keys(specObj)) {
-			const method = key.toLowerCase();
-			if (
-				["get", "post", "put", "delete", "patch", "head", "options"].includes(
-					method,
-				)
-			) {
-				const methodSpec = specObj[key] as Record<string, unknown>;
-				// Check if it has the CustomSpec structure (format and responses)
-				if (methodSpec.format && methodSpec.responses) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Extract spec data from a spec module
-	 */
-	private getSpecData(specModule: unknown): unknown {
-		// Type guard to check if specModule has string keys
-		if (typeof specModule !== "object" || specModule === null) {
-			return null;
-		}
-
-		const typedSpecModule = specModule as Record<string, unknown>;
-
-		// Try to find exported spec data
-		for (const key in specModule) {
-			const exported = typedSpecModule[key];
-			if (typeof exported === "object" && exported !== null) {
-				return exported;
-			}
-		}
-		return null;
 	}
 
 	/**

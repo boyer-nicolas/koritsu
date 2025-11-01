@@ -2,8 +2,8 @@ import { AppConfig, type Config } from "@lib/config";
 import { FileRouter } from "@lib/router";
 
 export class Server {
-	private config: Config;
-	private fileRouter: FileRouter;
+	public config: Config;
+	public fileRouter: FileRouter;
 	static server?: Bun.Server<undefined>;
 
 	constructor(routesPath: string = "./routes") {
