@@ -12,7 +12,7 @@ import {
 	type RouteProps,
 	type SpecItem,
 	zodToOpenAPISchema,
-} from "./helpers";
+} from "../src/lib/helpers";
 
 describe("helpers.ts", () => {
 	describe("createRoute", () => {

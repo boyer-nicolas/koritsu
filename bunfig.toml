@@ -1,0 +1,9 @@
+logLevel = "debug"
+
+[test]
+root = "./tests"
+coverage = true
+coverageThreshold = 0.8
+coverageDir = "./coverage"
+coverageReporter  = ["text", "lcov"]
+rerunEach = 3

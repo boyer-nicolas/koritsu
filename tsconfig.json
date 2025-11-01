@@ -35,5 +35,13 @@
       "@dev/*": ["./dev/*"]
     }
   },
-  "include": ["src", "dev"]
+  "include": [
+    "src",
+    "dev",
+    "tests/config.test.ts",
+    "tests/helpers.test.ts",
+    "tests/router.test.ts",
+    "tests/server.test.ts",
+    "tests/spec-validation.test.ts"
+  ]
 }

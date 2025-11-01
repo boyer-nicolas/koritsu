@@ -24,7 +24,7 @@
     "lint": "biome check",
     "prepare": "husky",
     "check": "tsc --noEmit",
-    "test": "bun test --coverage src/",
+    "test": "bun test",
     "generate:env-docs": "bun run ./scripts/generate-env.ts",
     "build:js": "bun run ./build.ts",
     "build:types": "tsc --outDir dist && tsc-alias --outDir dist",
