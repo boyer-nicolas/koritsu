@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { OpenAPIV3_1 } from "openapi-types";
 import { AppConfig } from "../../src/lib/config";
 import { Server } from "../../src/lib/server";
 
@@ -41,7 +42,8 @@ describe("Storage API Integration Tests", () => {
 				"application/json",
 			);
 
-			const buckets = await response.json();
+			// biome-ignore lint/suspicious/noExplicitAny: Required for testing
+			const buckets = (await response.json()) as any[];
 			expect(Array.isArray(buckets)).toBe(true);
 			expect(buckets.length).toBeGreaterThan(0);
 
@@ -55,12 +57,16 @@ describe("Storage API Integration Tests", () => {
 
 		test("should have proper OpenAPI documentation", async () => {
 			const response = await fetch(`${baseURL}/api-docs.json`);
-			const spec = await response.json();
+			const spec = (await response.json()) as OpenAPIV3_1.Document;
 
+			expect(spec.paths).toBeDefined();
+			if (!spec.paths) throw new Error("spec.paths is undefined");
 			expect(spec.paths).toHaveProperty("/storage");
 			expect(spec.paths["/storage"]).toHaveProperty("get");
 
-			const getSpec = spec.paths["/storage"].get;
+			const getSpec = spec.paths["/storage"]?.get;
+			expect(getSpec).toBeDefined();
+			if (!getSpec) throw new Error("getSpec is undefined");
 			expect(getSpec).toHaveProperty("responses");
 			expect(getSpec.responses).toHaveProperty("200");
 		});
@@ -160,20 +166,26 @@ describe("Storage API Integration Tests", () => {
 
 		test("should have proper path parameter validation", async () => {
 			const response = await fetch(`${baseURL}/api-docs.json`);
-			const spec = await response.json();
+			const spec = (await response.json()) as OpenAPIV3_1.Document;
 
 			expect(spec.paths).toHaveProperty("/storage/{id}");
+			expect(spec.paths).toBeDefined();
+			if (!spec.paths) throw new Error("spec.paths is undefined");
 			expect(spec.paths["/storage/{id}"]).toHaveProperty("get");
 
-			const getSpec = spec.paths["/storage/{id}"].get;
+			const getSpec = spec.paths["/storage/{id}"]?.get;
+			expect(getSpec).toBeDefined();
+			if (!getSpec) throw new Error("getSpec is undefined");
 			expect(getSpec).toHaveProperty("parameters");
 
 			const pathParam = getSpec.parameters?.find(
-				(p: { in: string; name: string; required?: boolean }) =>
-					p.in === "path" && p.name === "id",
+				(p) => "in" in p && "name" in p && p.in === "path" && p.name === "id",
 			);
 			expect(pathParam).toBeDefined();
-			expect(pathParam.required).toBe(true);
+			if (!pathParam) throw new Error("pathParam is undefined");
+			if ("required" in pathParam) {
+				expect(pathParam.required).toBe(true);
+			}
 		});
 	});
 
@@ -213,7 +225,8 @@ describe("Storage API Integration Tests", () => {
 
 			const error = await response.json();
 			expect(error).toHaveProperty("error");
-			expect(typeof error.error).toBe("string");
+			// biome-ignore lint/suspicious/noExplicitAny: Testing
+			expect(typeof (error as any).error).toBe("string");
 		});
 
 		test("should return proper error format for 405 Method Not Allowed", async () => {

@@ -35,14 +35,6 @@
       "@dev/*": ["./dev/*"]
     }
   },
-  "include": [
-    "src",
-    "dev",
-    "tests/unit/config.test.ts",
-    "tests/unit/helpers.test.ts",
-    "tests/unit/router.test.ts",
-    "tests/unit/server.test.ts",
-    "tests/unit/spec-validation.test.ts"
-  ],
+  "include": ["src", "dev", "tests"],
   "exclude": ["node_modules", "dist"]
 }

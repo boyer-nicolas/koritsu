@@ -9,6 +9,7 @@ export default {
 		"bun run lint:fix",
 		"bun test --findRelatedTests",
 		"bun run check",
+		"bun run build"
 	],
 };
 

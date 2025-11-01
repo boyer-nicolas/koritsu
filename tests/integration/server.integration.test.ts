@@ -7,7 +7,6 @@ describe("Server Integration Tests", () => {
 	let baseURL: string;
 
 	beforeAll(async () => {
-		// Set test environment variables
 		(Bun.env as Record<string, string | undefined>).ENVIRONMENT = "test";
 		(Bun.env as Record<string, string | undefined>).LOG_LEVEL = "error";
 		(Bun.env as Record<string, string | undefined>).AUTH_SECRET =
