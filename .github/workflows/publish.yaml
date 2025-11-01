@@ -29,7 +29,7 @@ jobs:
         run: |
           bun run check
           bun run lint
-          bun run test
+          bun run test:coverage
 
       - name: Build package
         run: bun run build
