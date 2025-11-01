@@ -176,9 +176,9 @@ jobs:
 
             ## Installation
             ```bash
-            bun install ombrage-api@${{ steps.release.outputs.new_version }}
+            bun install ombrage-bun-api@${{ steps.release.outputs.new_version }}
             # or
-            npm install ombrage-api@${{ steps.release.outputs.new_version }}
+            npm install ombrage-bun-api@${{ steps.release.outputs.new_version }}
             ```
           draft: false
           prerelease: false

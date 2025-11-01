@@ -25,7 +25,7 @@ describe("server.ts", () => {
 
 		await fs.writeFile(
 			path.join(testRouteDir, "route.ts"),
-			`import { createRoute } from "ombrage-api/helpers";
+			`import { createRoute } from "ombrage-bun-api/helpers";
 			export const GET = createRoute({
 				method: "GET",
 				callback: async () => Response.json({ message: "test" })
@@ -34,7 +34,7 @@ describe("server.ts", () => {
 
 		await fs.writeFile(
 			path.join(testRouteDir, "spec.ts"),
-			`import { defineSpec } from "ombrage-api/helpers";
+			`import { defineSpec } from "ombrage-bun-api/helpers";
 			export default defineSpec({
 				get: { summary: "Test route", responses: { "200": { description: "OK" } } }
 			});`,

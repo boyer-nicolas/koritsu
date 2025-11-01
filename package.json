@@ -1,11 +1,11 @@
 {
-  "name": "ombrage-api",
+  "name": "ombrage-bun-api",
   "module": "src/index.ts",
   "author": {
     "name": "Nicolas Boyer"
   },
   "repository": {
-    "url": "https://github.com/boyer-nicolas/ombrage-api"
+    "url": "https://github.com/boyer-nicolas/ombrage-bun-api"
   },
   "license": "MIT",
   "version": "0.0.1",
