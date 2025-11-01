@@ -202,6 +202,7 @@ export class FileRouter {
 					params?: Record<string, string>;
 					body?: unknown;
 					query?: Record<string, string>;
+					headers?: Record<string, string>;
 				}) => Promise<Response>;
 			};
 			if (!routeObject.callback || typeof routeObject.callback !== "function") {
@@ -221,6 +222,12 @@ export class FileRouter {
 				query[key] = value;
 			});
 
+			// Extract headers as a simple object
+			const headers: Record<string, string> = {};
+			request.headers.forEach((value, key) => {
+				headers[key] = value;
+			});
+
 			// Parse request body if present
 			let body: unknown;
 			if (request.headers.get("content-type")?.includes("application/json")) {
@@ -236,6 +243,7 @@ export class FileRouter {
 				params: routeMatch.params,
 				body,
 				query,
+				headers,
 			});
 		} catch (error) {
 			console.error(`Error handling ${method} ${path}:`, error);

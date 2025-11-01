@@ -1,12 +1,44 @@
 import type { OpenAPIV3_1 } from "openapi-types";
 import { z } from "zod";
 
+// Type helpers for extracting types from Zod schemas
+type InferZodType<T> = T extends z.ZodType<infer U> ? U : never;
+
+// Helper type to extract parameter types from spec
+type ExtractParamTypes<TSpec extends SpecItem> = {
+	path: TSpec["parameters"] extends { path: infer P }
+		? P extends z.ZodType
+			? InferZodType<P>
+			: Record<string, string>
+		: Record<string, string>;
+	query: TSpec["parameters"] extends { query: infer Q }
+		? Q extends z.ZodType
+			? InferZodType<Q>
+			: Record<string, string>
+		: Record<string, string>;
+	headers: TSpec["parameters"] extends { headers: infer H }
+		? H extends z.ZodType
+			? InferZodType<H>
+			: Record<string, string>
+		: Record<string, string>;
+};
+
+// Helper type to extract body type from spec (for POST/PUT/PATCH requests)
+type ExtractBodyType<TSpec extends SpecItem> = TSpec["parameters"] extends {
+	body: infer B;
+}
+	? B extends z.ZodType
+		? InferZodType<B>
+		: unknown
+	: unknown;
+
 export type SpecItem = {
 	format: "json" | "text";
 	parameters?: {
 		path?: z.ZodType;
 		query?: z.ZodType;
 		headers?: z.ZodType;
+		body?: z.ZodType;
 	};
 	responses: {
 		[key: number]: {
@@ -302,14 +334,22 @@ type StatusCodeToNumber<T extends string> =
 			? number
 			: never;
 
-// Enhanced RouteProps with request parameters and body
-export type RouteProps = {
+// Enhanced RouteProps with typed parameters based on spec
+export type RouteProps<TSpec extends SpecItem | undefined = undefined> = {
 	request: Request;
-	params?: Record<string, string>;
-	body?: unknown;
-	query?: Record<string, string>;
-	validator?: unknown;
-};
+} & (TSpec extends SpecItem
+	? {
+			params: ExtractParamTypes<TSpec>["path"];
+			query: ExtractParamTypes<TSpec>["query"];
+			headers: ExtractParamTypes<TSpec>["headers"];
+			body: ExtractBodyType<TSpec>;
+		}
+	: {
+			params?: Record<string, string>;
+			query?: Record<string, string>;
+			headers?: Record<string, string>;
+			body?: unknown;
+		});
 
 // Type-safe Response creator with compile-time validation
 export function createTypedResponse<T extends OpenAPIV3_1.OperationObject>(
@@ -334,27 +374,36 @@ export function createTypedResponse<T extends OpenAPIV3_1.OperationObject>(
 	};
 }
 
-export type CreateRouteProps = {
+export type CreateRouteProps<TSpec extends SpecItem | undefined = undefined> = {
 	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-	callback?: (props: RouteProps) => Promise<Response>;
-	spec?: SpecItem;
+	callback?: (props: RouteProps<TSpec>) => Promise<Response>;
+	spec?: TSpec;
 };
 
-export type RouteDefinition = {
+export type RouteDefinition<TSpec extends SpecItem | undefined = undefined> = {
 	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-	callback?: (props: RouteProps) => Promise<Response>;
-	spec?: SpecItem;
+	callback?: (props: RouteProps<TSpec>) => Promise<Response>;
+	spec?: TSpec;
 };
 
-export function createRoute({ method, callback, spec }: CreateRouteProps) {
+// Enhanced createRoute function with parameter validation and type inference
+export function createRoute<TSpec extends SpecItem | undefined = undefined>({
+	method,
+	callback,
+	spec,
+}: CreateRouteProps<TSpec>): RouteDefinition<TSpec> {
 	if (!callback) {
-		return { method, callback, spec };
+		return { method, callback, spec } as RouteDefinition<TSpec>;
 	}
 
 	// If spec is provided, wrap the callback with validation
 	const wrappedCallback = spec
-		? async (props: RouteProps): Promise<Response> => {
-				const response = await callback(props);
+		? async (props: RouteProps<undefined>): Promise<Response> => {
+				// Validate and parse parameters according to spec
+				const validatedProps = await validateAndParseParameters(props, spec);
+
+				// Call the original callback with validated parameters
+				const response = await callback(validatedProps as RouteProps<TSpec>);
 
 				try {
 					validateResponseAgainstSpec(response, spec, method);
@@ -380,19 +429,87 @@ export function createRoute({ method, callback, spec }: CreateRouteProps) {
 
 				return response;
 			}
-		: callback;
+		: (callback as (props: RouteProps<undefined>) => Promise<Response>);
 
-	return { method, callback: wrappedCallback, spec };
+	return { method, callback: wrappedCallback, spec } as RouteDefinition<TSpec>;
+}
+
+/**
+ * Validates and parses request parameters according to the provided spec
+ */
+async function validateAndParseParameters(
+	props: RouteProps<undefined>,
+	spec: SpecItem,
+): Promise<RouteProps<undefined>> {
+	const {
+		request,
+		params: rawParams,
+		query: rawQuery,
+		headers: rawHeaders,
+		body: rawBody,
+	} = props;
+
+	const validatedProps: RouteProps<undefined> = {
+		request,
+		params: {},
+		query: {},
+		headers: {},
+		body: undefined,
+	};
+
+	try {
+		// Validate path parameters
+		if (spec.parameters?.path) {
+			const pathResult = spec.parameters.path.parse(rawParams || {});
+			validatedProps.params = pathResult as Record<string, string>;
+		} else {
+			validatedProps.params = rawParams || {};
+		}
+
+		// Validate query parameters
+		if (spec.parameters?.query) {
+			const queryResult = spec.parameters.query.parse(rawQuery || {});
+			validatedProps.query = queryResult as Record<string, string>;
+		} else {
+			validatedProps.query = rawQuery || {};
+		}
+
+		// Validate headers
+		if (spec.parameters?.headers) {
+			const headersResult = spec.parameters.headers.parse(rawHeaders || {});
+			validatedProps.headers = headersResult as Record<string, string>;
+		} else {
+			validatedProps.headers = rawHeaders || {};
+		}
+
+		// Validate body (for POST/PUT/PATCH requests)
+		if (spec.parameters?.body) {
+			const bodyResult = spec.parameters.body.parse(rawBody);
+			validatedProps.body = bodyResult;
+		} else {
+			validatedProps.body = rawBody;
+		}
+
+		return validatedProps;
+	} catch (error) {
+		// Handle validation errors
+		if (error instanceof z.ZodError) {
+			throw new Error(`Parameter validation failed: ${error.message}`);
+		}
+		throw error;
+	}
 }
 
 /**
  * Helper function to create route collections with multiple methods
  * This allows organizing multiple HTTP methods for the same path in one place
  */
-export function createRouteCollection(
-	routes: Record<string, CreateRouteProps>,
-): Record<string, RouteDefinition> {
-	const collection: Record<string, RouteDefinition> = {};
+export function createRouteCollection<
+	TSpec extends SpecItem | undefined = undefined,
+>(
+	routes: Record<string, CreateRouteProps<TSpec>>,
+): Record<string, RouteDefinition<TSpec>> {
+	const collection: Record<string, RouteDefinition<TSpec>> = {};
 
 	for (const [methodName, routeProps] of Object.entries(routes)) {
 		const method = methodName.toUpperCase() as

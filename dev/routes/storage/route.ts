@@ -14,7 +14,7 @@ export const GET = createRoute({
 		return Response.json(buckets);
 	},
 	spec: {
-		format: "json",
+		format: "json" as const,
 		responses: {
 			200: {
 				summary: "List all storage items",
@@ -28,14 +28,18 @@ export const GET = createRoute({
 export const POST = createRoute({
 	method: "POST",
 	callback: async ({ body }) => {
-		const typedBody = body as { name: string };
-		const bucket = createBucket(typedBody.name);
+		const bucket = createBucket(body.name);
 		return Response.json(bucket, {
 			status: 201,
 		});
 	},
 	spec: {
 		format: "json",
+		parameters: {
+			body: z.object({
+				name: z.string().describe("The name of the storage bucket"),
+			}),
+		},
 		responses: {
 			201: {
 				summary: "Storage item created successfully",

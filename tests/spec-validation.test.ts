@@ -33,7 +33,14 @@ describe("createRoute with spec validation", () => {
 
 		// Test the callback directly as an async function
 		if (route.callback) {
-			await expect(route.callback({ request })).rejects.toThrow();
+			const mockProps = {
+				request,
+				params: {},
+				query: {},
+				headers: {},
+				body: undefined,
+			};
+			await expect(route.callback(mockProps)).rejects.toThrow();
 		}
 	});
 
@@ -66,7 +73,14 @@ describe("createRoute with spec validation", () => {
 		let response: Response | undefined;
 		await expect(async () => {
 			if (route.callback) {
-				response = await route.callback({ request });
+				const mockProps = {
+					request,
+					params: {},
+					query: {},
+					headers: {},
+					body: undefined,
+				};
+				response = await route.callback(mockProps);
 			}
 		}).not.toThrow();
 
@@ -88,7 +102,14 @@ describe("createRoute with spec validation", () => {
 		let response: Response | undefined;
 		await expect(async () => {
 			if (route.callback) {
-				response = await route.callback({ request });
+				const mockProps = {
+					request,
+					params: {},
+					query: {},
+					headers: {},
+					body: undefined,
+				};
+				response = await route.callback(mockProps);
 			}
 		}).not.toThrow();
 

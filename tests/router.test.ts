@@ -44,6 +44,7 @@ describe("router.ts", () => {
 				params: {},
 				body: undefined,
 				query: {},
+				headers: {},
 			});
 			expect(await response.text()).toBe("Hello World");
 		});
@@ -75,6 +76,7 @@ describe("router.ts", () => {
 				params: {},
 				body: { name: "John" },
 				query: {},
+				headers: { "content-type": "application/json" },
 			});
 			expect(result).toEqual({ received: { name: "John" } });
 		});
@@ -171,6 +173,7 @@ describe("router.ts", () => {
 				params: { id: "123" },
 				body: undefined,
 				query: {},
+				headers: {},
 			});
 		});
 
@@ -205,6 +208,7 @@ describe("router.ts", () => {
 				params: { userId: "123", postId: "456" },
 				body: undefined,
 				query: {},
+				headers: {},
 			});
 		});
 
@@ -239,6 +243,7 @@ describe("router.ts", () => {
 				params: {},
 				body: undefined,
 				query: { filter: "active", sort: "name" },
+				headers: {},
 			});
 		});
 
