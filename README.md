@@ -1,9 +1,9 @@
-# [Ombrage API](https://www.npmjs.com/package/ombrage-api)
+# [Ombrage API](https://www.npmjs.com/package/ombrage-bun-api)
 
-[![CI](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/ci.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/ci.yaml)
-[![Publish](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/publish.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/publish.yaml)
-[![NPM Version](https://img.shields.io/npm/v/ombrage-api)](https://www.npmjs.com/package/ombrage-api)
-[![NPM Downloads](https://img.shields.io/npm/dm/ombrage-api)](https://www.npmjs.com/package/ombrage-api)
+[![CI](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/ci.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/ci.yaml)
+[![Publish](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml)
+[![NPM Version](https://img.shields.io/npm/v/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
+[![NPM Downloads](https://img.shields.io/npm/dm/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
 [![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](./coverage/)
 
 A powerful file-based routing system built with Bun, featuring automatic API documentation generation with Swagger UI.
@@ -21,14 +21,14 @@ A powerful file-based routing system built with Bun, featuring automatic API doc
 1. Install the package
 
 ```bash
-bun install ombrage-api
+bun install ombrage-bun-api
 ```
 
 2. Create the server entry point
 
 ```typescript
 // index.ts
-import { Server } from "ombrage-api";
+import { Server } from "ombrage-bun-api";
 
 new Server("./routes").start();
 ```
@@ -37,7 +37,7 @@ new Server("./routes").start();
 
 ```typescript
 // routes/hello/route.ts
-import { createRoute } from "ombrage-api/helpers";
+import { createRoute } from "ombrage-bun-api/helpers";
 export const GET = createRoute({
   method: "GET",
   callback: async () => {
@@ -66,7 +66,7 @@ Once the server is running, visit:
 2. **Add route handlers** in `route.ts`:
 
    ```typescript
-   import { createRoute } from "ombrage-api";
+   import { createRoute } from "ombrage-bun-api";
    import { getProfile, profileSchema } from "../lib/service";
    import { z } from "zod";
 
@@ -129,7 +129,7 @@ routes/
 Use Zod schemas to define route parameters in your route specs. Ombrage API supports three types of parameters that are automatically extracted and validated:
 
 ```typescript
-import { defineSpec } from "ombrage-api";
+import { defineSpec } from "ombrage-bun-api";
 import { z } from "zod";
 
 export default defineSpec({
@@ -303,7 +303,7 @@ When parameter validation fails, the framework automatically returns structured 
 
 ```typescript
 // routes/users/[id]/route.ts
-import { createRoute } from "ombrage-api";
+import { createRoute } from "ombrage-bun-api";
 import spec from "./spec";
 
 export const GET = createRoute({
@@ -335,7 +335,7 @@ export const GET = createRoute({
 
 ```typescript
 // routes/users/[id]/spec.ts
-import { defineSpec } from "ombrage-api";
+import { defineSpec } from "ombrage-bun-api";
 import { z } from "zod";
 
 export default defineSpec({
