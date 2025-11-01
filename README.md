@@ -181,6 +181,50 @@ export const GET = createRoute({
     },
   },
 });
+
+// Example with POST request and body validation
+export const POST = createRoute({
+  method: "POST",
+  callback: async ({ body }) => {
+    // Body is automatically validated and typed
+    const { name, email, age } = body;
+
+    const newUser = await createUser({
+      name,
+      email,
+      age,
+    });
+
+    return Response.json(newUser, { status: 201 });
+  },
+  spec: {
+    summary: "Create a new user",
+    parameters: z.object({
+      // Request body validation
+      body: z.object({
+        name: z.string().min(1).max(100).describe("User's full name"),
+        email: z.string().email().describe("User's email address"),
+        age: z.number().min(18).max(120).describe("User's age"),
+        bio: z.string().optional().describe("Optional user biography"),
+      }),
+    }),
+    responses: {
+      "201": {
+        description: "User created successfully",
+        schema: z.object({
+          id: z.string().uuid(),
+          name: z.string(),
+          email: z.string(),
+          age: z.number(),
+          createdAt: z.string(),
+        }),
+      },
+      "400": {
+        description: "Invalid request data",
+      },
+    },
+  },
+});
 ```
 
 #### Parameter Types
@@ -190,6 +234,7 @@ export const GET = createRoute({
 | **Path**       | URL segments     | `/users/[id]`           | Dynamic route segments           |
 | **Query**      | URL query string | `?limit=10&search=john` | Optional filters and pagination  |
 | **Headers**    | HTTP headers     | `accept-language: en`   | Content negotiation and metadata |
+| **Body**       | Request body     | `{"name": "John Doe"}`  | Data payload for POST/PUT/PATCH  |
 
 #### Accessing Parameters in Routes
 
@@ -206,7 +251,7 @@ export const GET = createRoute({
     const { limit, offset, search } = query;
 
     // Headers
-    const apiKey = headers["x-api-key"];
+    const acceptLanguage = headers["accept-language"];
 
     // Use parameters in your logic
     const users = await getUsersWithFilters({
@@ -214,13 +259,206 @@ export const GET = createRoute({
       limit,
       offset,
       search,
-      apiKey,
     });
 
     return Response.json(users);
   },
-  spec: spec.get,
+  // ... spec definition
 });
+
+export const POST = createRoute({
+  method: "POST",
+  callback: async ({ body, headers, request }) => {
+    // Request body (automatically parsed and validated)
+    const { name, email, preferences } = body;
+
+    // Headers for content negotiation
+    const contentType = headers["content-type"];
+
+    // Create new resource
+    const user = await createUser({ name, email, preferences });
+
+    return Response.json(user, { status: 201 });
+  },
+  // ... spec definition
+});
+
+export const PUT = createRoute({
+  method: "PUT",
+  callback: async ({ params, body, query, request }) => {
+    // All parameter types available together
+    const { id } = params; // Path parameter
+    const { userData } = body; // Request body
+    const { force } = query; // Query parameter
+
+    const result = await updateUser(id, userData, { force });
+    return Response.json(result);
+  },
+  // ... spec definition
+});
+```
+
+### Request Body Validation
+
+For POST, PUT, and PATCH requests, you can validate request bodies using Zod schemas. The framework automatically parses JSON bodies and validates them against your schema:
+
+```typescript
+// routes/users/route.ts
+import { createRoute } from "ombrage-bun-api";
+import { z } from "zod";
+
+export const POST = createRoute({
+  method: "POST",
+  callback: async ({ body }) => {
+    // body is automatically parsed and validated
+    const { name, email, profile } = body;
+
+    const newUser = await database.users.create({
+      name,
+      email,
+      profile,
+    });
+
+    return Response.json(newUser, { status: 201 });
+  },
+  spec: {
+    summary: "Create a new user",
+    description: "Creates a new user with the provided information",
+    parameters: z.object({
+      body: z.object({
+        name: z.string().min(1).max(100).describe("User's full name"),
+        email: z.string().email().describe("Valid email address"),
+        profile: z
+          .object({
+            bio: z.string().optional().describe("User biography"),
+            website: z.string().url().optional().describe("Personal website"),
+            location: z.string().optional().describe("User location"),
+          })
+          .optional()
+          .describe("Optional profile information"),
+        preferences: z
+          .object({
+            theme: z.enum(["light", "dark"]).default("light"),
+            notifications: z.boolean().default(true),
+          })
+          .optional()
+          .describe("User preferences"),
+      }),
+    }),
+    responses: {
+      "201": {
+        description: "User created successfully",
+        schema: z.object({
+          id: z.string().uuid(),
+          name: z.string(),
+          email: z.string(),
+          createdAt: z.string(),
+        }),
+      },
+      "400": {
+        description: "Invalid request data or validation failed",
+      },
+    },
+  },
+});
+
+// Complex example with nested validation
+export const PUT = createRoute({
+  method: "PUT",
+  callback: async ({ params, body }) => {
+    const { id } = params;
+    const userData = body;
+
+    const updatedUser = await database.users.update(id, userData);
+
+    if (!updatedUser) {
+      return Response.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return Response.json(updatedUser);
+  },
+  spec: {
+    summary: "Update user information",
+    parameters: z.object({
+      path: z.object({
+        id: z.string().uuid().describe("User ID to update"),
+      }),
+      body: z
+        .object({
+          name: z.string().min(1).max(100).optional(),
+          email: z.string().email().optional(),
+          profile: z
+            .object({
+              bio: z.string().max(500).optional(),
+              website: z.string().url().optional(),
+              avatar: z.string().url().optional(),
+            })
+            .optional(),
+          settings: z
+            .object({
+              privacy: z.enum(["public", "private", "friends"]).optional(),
+              emailNotifications: z.boolean().optional(),
+            })
+            .optional(),
+        })
+        .refine((data) => Object.keys(data).length > 0, {
+          message: "At least one field must be provided for update",
+        }),
+    }),
+    responses: {
+      "200": {
+        description: "User updated successfully",
+        schema: z.object({
+          id: z.string().uuid(),
+          name: z.string(),
+          email: z.string(),
+          updatedAt: z.string(),
+        }),
+      },
+      "400": {
+        description: "Invalid request data",
+      },
+      "404": {
+        description: "User not found",
+      },
+    },
+  },
+});
+```
+
+#### Body Validation Features
+
+- **Automatic JSON parsing**: Request bodies are automatically parsed from JSON
+- **Type safety**: TypeScript types are inferred from your Zod schemas
+- **Nested objects**: Support for complex nested object validation
+- **Custom validation**: Use Zod's `.refine()` for custom validation logic
+- **Optional fields**: Mark fields as optional with `.optional()`
+- **Default values**: Provide defaults with `.default(value)`
+- **Validation errors**: Automatic 400 responses for invalid data
+
+#### Body Validation Error Responses
+
+When body validation fails, the framework returns structured error responses:
+
+```json
+{
+  "error": "Parameter validation failed",
+  "details": [
+    {
+      "code": "invalid_type",
+      "expected": "string",
+      "received": "number",
+      "path": ["name"],
+      "message": "Invalid input: expected string, received number"
+    },
+    {
+      "code": "invalid_string",
+      "validation": "email",
+      "path": ["email"],
+      "message": "Invalid email format"
+    }
+  ]
+}
 ```
 
 ### Supported Parameter Types & Validation
@@ -236,6 +474,9 @@ z.boolean(); // Boolean parameter (true/false)
 z.date(); // Date parameter (ISO string)
 ```
 
+#### Advanced Types
+
+````typescript
 #### Advanced Types
 
 ```typescript
@@ -257,10 +498,40 @@ z.number().min(1).max(100);
 z.string().email();
 z.string().uuid();
 
-// Parameters with descriptions (for OpenAPI docs)
+// Nested objects (for body parameters)
+z.object({
+  profile: z.object({
+    bio: z.string().optional(),
+    avatar: z.string().url().optional(),
+  }),
+  preferences: z.object({
+    theme: z.enum(["light", "dark"]),
+    notifications: z.boolean(),
+  }),
+});
+
+// Arrays of objects (for body parameters)
+z.array(z.object({
+  name: z.string(),
+  value: z.string(),
+}));
+
+// Union types (multiple possible types)
+z.union([z.string(), z.number()]);
+
+// Custom validation with refine
+z.string().refine(
+  (val) => val.startsWith("user_"),
+  { message: "ID must start with 'user_'" }
+);
+
 // Parameters with descriptions (for OpenAPI docs)
 z.string().describe("User's unique identifier");
-```
+````
+
+z.string().describe("User's unique identifier");
+
+````
 
 #### Type Coercion & Validation
 
@@ -281,7 +552,7 @@ query: z.object({
   active: z.boolean().default(true),
   tags: z.array(z.string()).optional(),
 });
-```
+````
 
 #### Error Handling
 
