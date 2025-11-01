@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.9
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.8...v0.0.9)
+
+### 🚀 Enhancements
+
+- Reduce bundle size ([#16](https://github.com/boyer-nicolas/ombrage-bun-api/pull/16))
+
+### ❤️ Contributors
+
+- Nicolas Boyer ([@boyer-nicolas](https://github.com/boyer-nicolas))
+
 ## v0.0.8
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.7...v0.0.8)
