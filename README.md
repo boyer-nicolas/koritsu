@@ -11,8 +11,7 @@ A powerful file-based routing system built with Bun, featuring automatic API doc
 
 - 🚀 **File-based routing**: Routes auto-discovered from filesystem structure
 - 📁 **Structured organization**: A simple `route.ts` file
-- 📖 **Auto-generated docs**: Swagger UI with OpenAPI 3.0 specifications
-- 🔄 **Hot reload**: Development server with instant updates
+- 📖 **Auto-generated docs**: Swagger UI with OpenAPI 3.1 specifications
 - 🛡️ **JSON error responses**: Consistent error handling with structured responses
 
 ## Getting Started
