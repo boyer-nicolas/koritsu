@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.6
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.5...v0.0.6)
+
+### 🏡 Chore
+
+- Fix ci badge ([5057373](https://github.com/boyer-nicolas/ombrage-bun-api/commit/5057373))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.5
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.4...v0.0.5)
