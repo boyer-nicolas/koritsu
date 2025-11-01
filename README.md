@@ -276,8 +276,6 @@ query: z.object({
 
 })
 
-````
-
 #### Error Handling
 
 When parameter validation fails, the framework automatically returns structured error responses:
@@ -297,7 +295,7 @@ When parameter validation fails, the framework automatically returns structured 
     }
   ]
 }
-````
+```
 
 ### Complete Example: Advanced Route with Parameters
 
