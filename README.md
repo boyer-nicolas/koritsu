@@ -1,6 +1,9 @@
 # [Ombrage API](https://www.npmjs.com/package/ombrage-api)
 
 [![CI](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/ci.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/ci.yaml)
+[![Publish](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/publish.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-api/actions/workflows/publish.yaml)
+[![NPM Version](https://img.shields.io/npm/v/ombrage-api)](https://www.npmjs.com/package/ombrage-api)
+[![NPM Downloads](https://img.shields.io/npm/dm/ombrage-api)](https://www.npmjs.com/package/ombrage-api)
 [![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](./coverage/)
 
 A powerful file-based routing system built with Bun, featuring automatic API documentation generation with Swagger UI.
@@ -296,3 +299,39 @@ The project automatically generates coverage reports during testing. You can:
 - **Generate Coverage Report**: Run `bun run coverage:report` to create the HTML report
 
 The coverage badge in this README is automatically updated on every push to the main branch via GitHub Actions.
+
+## Publishing
+
+The package is automatically published to NPM when changes are pushed to the `main` branch.
+
+### Automated Publishing (Recommended)
+
+1. **Push to main branch**: The CI/CD pipeline automatically handles publishing
+2. **Changelog generation**: Uses `changelogen` to generate changelog and bump version
+3. **NPM publishing**: Publishes to NPM with public access
+4. **GitHub releases**: Creates GitHub releases with generated release notes
+
+### Manual Publishing
+
+For local testing or manual releases:
+
+```bash
+# Run all checks and publish locally
+bun run publish:local
+
+# Or use the original publish script
+bun run publish
+```
+
+### Setup Requirements
+
+To enable automated publishing, configure these GitHub repository secrets:
+
+- `NPM_TOKEN`: Your NPM authentication token with publish permissions
+
+**To create an NPM token:**
+
+1. Log in to [npmjs.com](https://www.npmjs.com)
+2. Go to Access Tokens in your account settings
+3. Generate a new token with "Automation" type
+4. Add it as `NPM_TOKEN` in your GitHub repository secrets
