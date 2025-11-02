@@ -103,9 +103,9 @@ describe("server.ts", () => {
 		});
 	});
 
-	describe("handleShutdown", () => {
+	describe("stop", () => {
 		test("should be a static method", () => {
-			expect(typeof Server.handleShutdown).toBe("function");
+			expect(typeof Server.stop).toBe("function");
 		});
 
 		test("should handle shutdown gracefully", () => {
@@ -116,7 +116,7 @@ describe("server.ts", () => {
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			process.exit = mock(() => {}) as any;
 
-			Server.handleShutdown();
+			Server.stop();
 
 			expect(console.log).toHaveBeenCalledWith(
 				"==> Shutting down gracefully...",
@@ -131,7 +131,7 @@ describe("server.ts", () => {
 		test("should stop server if it exists", () => {
 			const mockStop = mock(() => {});
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
-			Server.server = { stop: mockStop } as any;
+			Server.instance = { stop: mockStop } as any;
 
 			const originalLog = console.log;
 			const originalExit = process.exit;
@@ -140,14 +140,14 @@ describe("server.ts", () => {
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			process.exit = mock(() => {}) as any;
 
-			Server.handleShutdown();
+			Server.stop();
 
 			expect(mockStop).toHaveBeenCalled();
 
 			// Restore
 			console.log = originalLog;
 			process.exit = originalExit;
-			Server.server = undefined;
+			Server.instance = undefined;
 		});
 	});
 
@@ -203,8 +203,8 @@ describe("server.ts", () => {
 	});
 
 	describe("signal handlers", () => {
-		test("should have handleShutdown method available for signal handlers", () => {
-			expect(typeof Server.handleShutdown).toBe("function");
+		test("should have stop method available for signal handlers", () => {
+			expect(typeof Server.stop).toBe("function");
 		});
 	});
 
@@ -272,8 +272,8 @@ describe("server.ts", () => {
 	});
 
 	describe("Server static properties", () => {
-		test("should have server property for storing server instance", () => {
-			expect(Server.server).toBeUndefined();
+		test("should have instance property for storing server instance", () => {
+			expect(Server.instance).toBeUndefined();
 		});
 	});
 });

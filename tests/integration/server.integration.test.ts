@@ -16,10 +16,8 @@ describe("Server Integration Tests", () => {
 
 		// Start server with dev routes on a random available port
 		const serverInstance = new Server("./dev/routes");
-		const options = await serverInstance.init();
-		options.port = 0; // Use random available port
 
-		server = Bun.serve(options);
+		server = await serverInstance.start();
 		baseURL = `http://${server.hostname}:${server.port}`;
 
 		console.log(`Test server started at ${baseURL}`);

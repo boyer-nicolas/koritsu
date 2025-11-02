@@ -1,40 +1,28 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import path from "node:path";
+import { AppConfig, type OmbrageServer, Server } from "ombrage-bun-api";
 
 describe("Example API Integration Tests", () => {
-	const baseUrl = "http://localhost:8080";
-	let serverProcess: ReturnType<typeof Bun.spawn>;
+	let server: OmbrageServer;
+	let baseUrl: string;
 
 	beforeAll(async () => {
-		// Start the example server as a subprocess
-		const proc = Bun.spawn(["bun", "run", "start"], {
-			cwd: "/Users/nicolasboyer/Dev/framework/example",
-			stdout: "pipe",
-			stderr: "pipe",
-		});
+		AppConfig.load();
 
-		serverProcess = proc;
+		// Create server instance using the example routes
+		const routesPath = path.join(__dirname, "..", "routes");
+		const serverInstance = new Server(routesPath);
 
-		// Wait for server to start
-		await new Promise((resolve) => setTimeout(resolve, 2000));
+		server = await serverInstance.start();
+		baseUrl = `http://${server.hostname}:${server.port}`;
 
-		// Verify server is running
-		let retries = 5;
-		while (retries > 0) {
-			try {
-				await fetch(`${baseUrl}/healthz`);
-				break;
-			} catch {
-				retries--;
-				if (retries === 0) throw new Error("Server failed to start");
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-			}
-		}
+		console.log(`Test server started at ${baseUrl}`);
 	});
 
 	afterAll(async () => {
 		// Stop the server
-		if (serverProcess) {
-			serverProcess.kill();
+		if (server) {
+			server.stop();
 		}
 	});
 
@@ -104,8 +92,12 @@ describe("Example API Integration Tests", () => {
 				body: JSON.stringify({}), // Missing message field
 			});
 
-			// Should return 400 for validation error or 500 for internal error
-			expect([400, 500]).toContain(response.status);
+			expect(response.status).toBe(500);
+
+			// Verify error response structure
+			const data = await response.json();
+			expect(data).toHaveProperty("error", "Internal Server Error");
+			expect(data).toHaveProperty("status", 500);
 		});
 	});
 
@@ -190,8 +182,12 @@ describe("Example API Integration Tests", () => {
 				body: JSON.stringify(invalidUser),
 			});
 
-			// Expect either 400 (validation error) or 500 (internal error during validation)
-			expect([400, 500]).toContain(response.status);
+			expect(response.status).toBe(500);
+
+			// Verify error response structure
+			const data = await response.json();
+			expect(data).toHaveProperty("error", "Internal Server Error");
+			expect(data).toHaveProperty("status", 500);
 		});
 
 		test("POST /users should require name field", async () => {
@@ -207,8 +203,12 @@ describe("Example API Integration Tests", () => {
 				body: JSON.stringify(invalidUser),
 			});
 
-			// Expect either 400 (validation error) or 500 (internal error during validation)
-			expect([400, 500]).toContain(response.status);
+			expect(response.status).toBe(500);
+
+			// Verify error response structure
+			const data = await response.json();
+			expect(data).toHaveProperty("error", "Internal Server Error");
+			expect(data).toHaveProperty("status", 500);
 		});
 	});
 
@@ -284,8 +284,12 @@ describe("Example API Integration Tests", () => {
 				body: JSON.stringify({}), // Empty body
 			});
 
-			// Expect either 400 (validation error) or 500 (internal error during validation)
-			expect([400, 500]).toContain(response.status);
+			expect(response.status).toBe(500);
+
+			// Verify error response structure
+			const data = await response.json();
+			expect(data).toHaveProperty("error", "Internal Server Error");
+			expect(data).toHaveProperty("status", 500);
 		});
 
 		test("PUT /users/:id should validate email format", async () => {
@@ -302,8 +306,12 @@ describe("Example API Integration Tests", () => {
 				body: JSON.stringify(updateData),
 			});
 
-			// Expect either 400 (validation error) or 500 (internal error during validation)
-			expect([400, 500]).toContain(response.status);
+			expect(response.status).toBe(500);
+
+			// Verify error response structure
+			const data = await response.json();
+			expect(data).toHaveProperty("error", "Internal Server Error");
+			expect(data).toHaveProperty("status", 500);
 		});
 	});
 
@@ -315,6 +323,50 @@ describe("Example API Integration Tests", () => {
 			const html = await response.text();
 			expect(html).toContain("swagger");
 			expect(html).toContain("SwaggerUI");
+		});
+	});
+
+	describe("Error Handling", () => {
+		test("should handle 404 for non-existent routes", async () => {
+			const response = await fetch(`${baseUrl}/non-existent-route`);
+			expect(response.status).toBe(404);
+		});
+
+		test("should handle malformed JSON in request body", async () => {
+			const response = await fetch(`${baseUrl}/health`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: "{ invalid json",
+			});
+
+			// Should handle malformed JSON gracefully
+			expect(response.status).toBeGreaterThanOrEqual(400);
+		});
+
+		test("should handle missing Content-Type header for POST requests", async () => {
+			const response = await fetch(`${baseUrl}/health`, {
+				method: "POST",
+				body: JSON.stringify({ message: "test" }),
+			});
+
+			// Framework returns 500 for missing Content-Type with JSON body
+			expect(response.status).toBe(500);
+
+			const data = await response.json();
+			expect(data).toHaveProperty("error", "Internal Server Error");
+		});
+	});
+
+	describe("Performance", () => {
+		test("should respond quickly to health checks", async () => {
+			const startTime = Date.now();
+			const response = await fetch(`${baseUrl}/healthz`);
+			const endTime = Date.now();
+
+			expect(response.status).toBe(200);
+			expect(endTime - startTime).toBeLessThan(100); // Should respond in under 100ms
 		});
 	});
 });

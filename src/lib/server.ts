@@ -1,10 +1,12 @@
 import { AppConfig, type Config } from "./config";
 import { FileRouter } from "./router";
 
+export type OmbrageServer = Bun.Server<undefined>;
+
 export class Server {
 	public config: Config;
 	public fileRouter: FileRouter;
-	static server?: Bun.Server<undefined>;
+	static instance?: OmbrageServer;
 
 	constructor(routesPath: string = "./routes") {
 		this.fileRouter = new FileRouter(routesPath);
@@ -76,23 +78,31 @@ export class Server {
 		};
 	}
 
-	async start() {
+	async start(): Promise<OmbrageServer> {
 		console.log("==> Starting server...");
 		const serverOptions = await this.init();
 		const server = Bun.serve(serverOptions);
 		console.log(`==> Server running at ${server.url}`);
+		return server;
 	}
 
-	public static handleShutdown() {
+	static stop() {
+		console.log("==> Stopping server...");
 		console.log("==> Shutting down gracefully...");
-		Server.server?.stop();
-		process.exit();
+		try {
+			Server.instance?.stop();
+		} catch (error) {
+			console.error("Error stopping server:", error);
+		} finally {
+			console.log("==> Server stopped.");
+			process.exit();
+		}
 	}
 }
 
 process.on("SIGINT", () => {
-	Server.handleShutdown();
+	Server.stop();
 });
 process.on("SIGTERM", () => {
-	Server.handleShutdown();
+	Server.stop();
 });
