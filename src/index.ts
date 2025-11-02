@@ -8,7 +8,7 @@ import {
 	type RouteProps,
 } from "./lib/helpers";
 import { FileRouter } from "./lib/router";
-import { Server } from "./lib/server";
+import { type OmbrageServer, Server } from "./lib/server";
 
 export {
 	Server,
@@ -18,6 +18,7 @@ export {
 	type RouteProps,
 	type CreateRouteProps,
 	type RouteDefinition,
+	type OmbrageServer,
 	createTypedResponse,
 	createRoute,
 	createRouteCollection,

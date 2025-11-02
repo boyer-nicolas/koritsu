@@ -66,6 +66,12 @@ jobs:
           echo "🏗️ Building package..."
           bun run build
 
+          echo "🧪 Running tests for the example app..."
+          cd example
+          bun install --frozen-lockfile --ignore-scripts
+          bun test
+          cd ..
+
           echo "✅ All checks passed successfully!"
 
       - name: Upload coverage report

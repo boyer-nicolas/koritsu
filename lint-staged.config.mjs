@@ -5,11 +5,14 @@
  */
 export default {
 	"src/app.d.ts": ["bun run ./scripts/generate-env.ts"],
-	"**/*.ts": () => [
+	"./src/**/*.ts": () => [
 		"bun run lint:fix",
 		"bun test --findRelatedTests",
 		"bun run check",
 		"bun run build"
+	],
+	"./example/**/*.ts": () => [
+		"bun run test --cwd example --findRelatedTests",
 	],
 };
 
