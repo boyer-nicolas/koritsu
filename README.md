@@ -59,7 +59,7 @@ bun run index.ts
 ## Configuration
 
 The server can be configured via options passed to the `Server` constructor or through environment variables.
-See the [Environment Variables Documentation](https://github.com/boyer-nicolas/ombrage-bun-api/blob/main/env.md) for a complete list of available configurations.
+See the [Configuration Documentation](https://github.com/boyer-nicolas/ombrage-bun-api/blob/main/configuration.md) for a complete list of available configurations.
 
 ## API Documentation
 
