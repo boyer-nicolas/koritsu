@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.16
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.15...v0.0.16)
+
+### 🏡 Chore
+
+- Workspace recommendations ([f1e8813](https://github.com/boyer-nicolas/ombrage-bun-api/commit/f1e8813))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.15
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.14...v0.0.15)
