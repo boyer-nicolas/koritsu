@@ -213,7 +213,7 @@ function generateResponseDescription(statusCode: number): string {
 		502: "Bad gateway",
 		503: "Service unavailable",
 	};
-	
+
 	return descriptions[statusCode] || `HTTP ${statusCode} response`;
 }
 
@@ -278,7 +278,9 @@ export function customSpecToOpenAPI(
 			if (defaultDescription === "Performs an API operation") {
 				const firstResponseKey = Object.keys(specItem.responses)[0];
 				if (firstResponseKey) {
-					defaultDescription = generateResponseDescription(Number(firstResponseKey));
+					defaultDescription = generateResponseDescription(
+						Number(firstResponseKey),
+					);
 				}
 			}
 

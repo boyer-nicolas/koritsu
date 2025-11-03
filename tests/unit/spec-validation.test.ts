@@ -6,10 +6,10 @@ describe("createRoute with spec validation", () => {
 	test("should throw error when response status doesn't match spec", async () => {
 		const mockSpec: SpecItem = {
 			format: "json",
+			summary: "Created",
+			description: "Created successfully",
 			responses: {
 				201: {
-					summary: "Created",
-					description: "Created successfully",
 					schema: z.object({
 						success: z.boolean(),
 					}),
@@ -47,10 +47,10 @@ describe("createRoute with spec validation", () => {
 	test("should not throw error when response status matches spec", async () => {
 		const mockSpec: SpecItem = {
 			format: "json",
+			summary: "Success",
+			description: "Success response",
 			responses: {
 				"200": {
-					summary: "Success",
-					description: "Success response",
 					schema: z.object({
 						success: z.boolean(),
 					}),
