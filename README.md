@@ -158,7 +158,6 @@ export const GET = createRoute({
     return Response.json(users);
   },
   spec: {
-    summary: "Get user by ID with optional filters",
     parameters: z.object({
       // Path parameters (from dynamic routes like [id])
       path: z.object({
@@ -185,6 +184,7 @@ export const GET = createRoute({
     }),
     responses: {
       "200": {
+        summary: "Get user by ID with optional filters",
         description: "User data with filters applied",
         // ... response schema
       },
@@ -208,7 +208,6 @@ export const POST = createRoute({
     return Response.json(newUser, { status: 201 });
   },
   spec: {
-    summary: "Create a new user",
     parameters: z.object({
       // Request body validation
       body: z.object({
@@ -220,7 +219,8 @@ export const POST = createRoute({
     }),
     responses: {
       "201": {
-        description: "User created successfully",
+        summary: "Create a new user",
+        description: "Creates a new user with the provided information",
         schema: z.object({
           id: z.string().uuid(),
           name: z.string(),
@@ -332,7 +332,6 @@ export const POST = createRoute({
     return Response.json(newUser, { status: 201 });
   },
   spec: {
-    summary: "Create a new user",
     description: "Creates a new user with the provided information",
     parameters: z.object({
       body: z.object({
@@ -357,7 +356,8 @@ export const POST = createRoute({
     }),
     responses: {
       "201": {
-        description: "User created successfully",
+        summary: "Create a new user",
+        description: "Creates a new user with the provided information",
         schema: z.object({
           id: z.string().uuid(),
           name: z.string(),
@@ -388,7 +388,6 @@ export const PUT = createRoute({
     return Response.json(updatedUser);
   },
   spec: {
-    summary: "Update user information",
     parameters: z.object({
       path: z.object({
         id: z.string().uuid().describe("User ID to update"),
@@ -417,7 +416,8 @@ export const PUT = createRoute({
     }),
     responses: {
       "200": {
-        description: "User updated successfully",
+        summary: "Update user information",
+        description: "Creates a new user with the provided information",
         schema: z.object({
           id: z.string().uuid(),
           name: z.string(),
@@ -636,7 +636,6 @@ When parameter validation fails, the framework automatically returns structured 
 }
 ```
 
-````typescript
 ```typescript
 export const GET = createRoute({
   method: "GET",
@@ -660,7 +659,6 @@ export const GET = createRoute({
     }
   },
   spec: {
-    summary: "Get user by ID with optional includes",
     description: "Retrieve a specific user with optional related data",
     parameters: z.object({
       path: z.object({
@@ -681,7 +679,9 @@ export const GET = createRoute({
     }),
     responses: {
       "200": {
-        description: "User data successfully retrieved",
+        summary: "Get user by ID with optional includes",
+        description:
+          "Fetches user data along with requested related information",
         content: {
           "application/json": {
             schema: {
@@ -707,7 +707,7 @@ export const GET = createRoute({
     },
   },
 });
-````
+```
 
 #### Best Practices for Parameter Definition
 
