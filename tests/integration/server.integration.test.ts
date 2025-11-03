@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { OpenAPIV3_1 } from "openapi-types";
 import { AppConfig } from "../../src/lib/config";
 import { type OmbrageServer, Server } from "../../src/lib/server";
 
@@ -66,6 +67,64 @@ describe("Server Integration Tests", () => {
 		expect(spec).toHaveProperty("openapi", "3.1.0");
 		expect(spec).toHaveProperty("info");
 		expect(spec).toHaveProperty("paths");
+	});
+
+	test("should include summary and description in OpenAPI spec operations", async () => {
+		const response = await fetch(`${baseURL}/api-docs.json`);
+		expect(response.status).toBe(200);
+
+		const spec = (await response.json()) as OpenAPIV3_1.Document;
+
+		// Check that the spec has paths
+		expect(spec.paths).toBeDefined();
+
+		if (!spec.paths) {
+			throw new Error("OpenAPI spec has no paths");
+		}
+
+		// Look for operations that should have summary and description
+		let foundOperationWithSummary = false;
+		let foundOperationWithDescription = false;
+
+		for (const [, pathItem] of Object.entries(spec.paths)) {
+			if (pathItem && typeof pathItem === "object") {
+				for (const [method, operation] of Object.entries(pathItem)) {
+					if (
+						operation &&
+						typeof operation === "object" &&
+						["get", "post", "put", "delete", "patch"].includes(method)
+					) {
+						const op = operation as OpenAPIV3_1.OperationObject;
+						if (op.summary) {
+							foundOperationWithSummary = true;
+							expect(typeof op.summary).toBe("string");
+							expect(op.summary.length).toBeGreaterThan(0);
+						}
+
+						if (op.description) {
+							foundOperationWithDescription = true;
+							expect(typeof op.description).toBe("string");
+							expect(op.description.length).toBeGreaterThan(0);
+						}
+
+						// Check that responses have proper descriptions
+						if (op.responses) {
+							for (const [, responseSpec] of Object.entries(op.responses)) {
+								if (responseSpec && typeof responseSpec === "object") {
+									const resp = responseSpec as OpenAPIV3_1.ResponseObject;
+									expect(resp.description).toBeDefined();
+									expect(typeof resp.description).toBe("string");
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// At least one operation should have summary and description from the dev routes
+		expect(foundOperationWithSummary).toBe(true);
+		expect(foundOperationWithDescription).toBe(true);
 	});
 
 	test("should return 404 for unknown routes", async () => {

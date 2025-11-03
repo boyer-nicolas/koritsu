@@ -20,6 +20,8 @@ export const GET = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Users"],
+		summary: "Get user by ID",
+		description: "Retrieve a specific user by their unique identifier",
 		parameters: {
 			path: z.object({
 				id: z.string().describe("User ID"),
@@ -27,8 +29,6 @@ export const GET = createRoute({
 		},
 		responses: {
 			200: {
-				summary: "User retrieved successfully",
-				description: "User data retrieved successfully",
 				schema: z.object({
 					id: z.string(),
 					name: z.string(),
@@ -60,6 +60,8 @@ export const PUT = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Users"],
+		summary: "Update user",
+		description: "Update an existing user's information",
 		parameters: {
 			path: z.object({
 				id: z.string().describe("User ID to update"),
@@ -75,8 +77,6 @@ export const PUT = createRoute({
 		},
 		responses: {
 			200: {
-				summary: "User updated successfully",
-				description: "User updated successfully",
 				schema: z.object({
 					id: z.string(),
 					name: z.string(),

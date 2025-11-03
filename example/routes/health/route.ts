@@ -14,10 +14,10 @@ export const GET = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Health"],
+		summary: "Service is healthy",
+		description: "Health check endpoint that returns service status",
 		responses: {
 			200: {
-				summary: "Service is healthy",
-				description: "Service is healthy",
 				schema: z.object({
 					status: z.string(),
 					timestamp: z.string(),
@@ -42,6 +42,8 @@ export const POST = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Health"],
+		summary: "Echo message",
+		description: "Echo back a message with timestamp",
 		parameters: {
 			body: z.object({
 				message: z.string().describe("Message to echo back"),
@@ -49,8 +51,6 @@ export const POST = createRoute({
 		},
 		responses: {
 			200: {
-				summary: "Message echoed successfully",
-				description: "Message echoed successfully",
 				schema: z.object({
 					echo: z.string(),
 					receivedAt: z.string(),
