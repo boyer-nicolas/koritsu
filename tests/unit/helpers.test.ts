@@ -195,10 +195,10 @@ describe("helpers.ts", () => {
 			const customSpec: CustomSpec = {
 				get: {
 					format: "json",
+					summary: "Success",
+					description: "A simple GET request",
 					responses: {
 						200: {
-							summary: "Success",
-							description: "Successful response",
 							schema: z.object({
 								message: z.string(),
 							}),
@@ -228,10 +228,10 @@ describe("helpers.ts", () => {
 							include: z.string().optional().describe("Fields to include"),
 						}),
 					},
+					summary: "Success",
+					description: "Successful response",
 					responses: {
 						200: {
-							summary: "Success",
-							description: "Successful response",
 							schema: z.object({
 								id: z.string(),
 							}),
@@ -280,10 +280,10 @@ describe("helpers.ts", () => {
 							"x-api-version": z.string().optional().describe("API version"),
 						}),
 					},
+					summary: "Success response",
+					description: "Successful operation",
 					responses: {
 						200: {
-							summary: "Success response",
-							description: "Successful operation",
 							schema: z.object({ status: z.string() }),
 						},
 					},
@@ -321,20 +321,20 @@ describe("helpers.ts", () => {
 			const customSpec: CustomSpec = {
 				get: {
 					format: "json",
+					summary: "Get success",
+					description: "Get response",
 					responses: {
 						200: {
-							summary: "Get success",
-							description: "Get response",
 							schema: z.string(),
 						},
 					},
 				},
 				post: {
 					format: "json",
+					summary: "Post success",
+					description: "Post response",
 					responses: {
 						201: {
-							summary: "Post success",
-							description: "Post response",
 							schema: z.object({ id: z.string() }),
 						},
 					},
@@ -364,10 +364,10 @@ describe("helpers.ts", () => {
 								.describe("Optional description"),
 						}),
 					},
+					summary: "Created",
+					description: "Successfully created item",
 					responses: {
 						201: {
-							summary: "Created",
-							description: "Successfully created item",
 							schema: z.object({
 								id: z.string(),
 								name: z.string(),
@@ -432,10 +432,10 @@ describe("helpers.ts", () => {
 							description: z.string().optional().describe("Item description"),
 						}),
 					},
+					summary: "Updated",
+					description: "Successfully updated item",
 					responses: {
 						200: {
-							summary: "Updated",
-							description: "Successfully updated item",
 							schema: z.object({
 								id: z.string(),
 								name: z.string(),
@@ -508,10 +508,10 @@ describe("helpers.ts", () => {
 				get: {
 					format: "json",
 					tags: ["Users", "Authentication"],
+					summary: "Success",
+					description: "Successful response",
 					responses: {
 						200: {
-							summary: "Success",
-							description: "Successful response",
 							schema: z.object({
 								message: z.string(),
 							}),
@@ -526,10 +526,10 @@ describe("helpers.ts", () => {
 							name: z.string(),
 						}),
 					},
+					summary: "Created",
+					description: "Resource created",
 					responses: {
 						201: {
-							summary: "Created",
-							description: "Resource created",
 							schema: z.object({
 								id: z.string(),
 								name: z.string(),
@@ -561,10 +561,10 @@ describe("helpers.ts", () => {
 			const customSpec: CustomSpec = {
 				get: {
 					format: "json",
+					summary: "Success",
+					description: "Successful response",
 					responses: {
 						200: {
-							summary: "Success",
-							description: "Successful response",
 							schema: z.object({
 								message: z.string(),
 							}),
@@ -593,10 +593,10 @@ describe("helpers.ts", () => {
 			const customSpec: CustomSpec = {
 				get: {
 					format: "json",
+					summary: "Success",
+					description: "Successful response",
 					responses: {
 						200: {
-							summary: "Success",
-							description: "Successful response",
 							schema: z.string(),
 						},
 					},
@@ -615,17 +615,15 @@ describe("helpers.ts", () => {
 		test("should validate response status against spec", () => {
 			const spec: SpecItem = {
 				format: "json",
+				summary: "OK",
+				description: "OK",
 				responses: {
 					200: {
-						summary: "OK",
-						description: "OK",
 						schema: z.object({
 							message: z.string(),
 						}),
 					},
 					404: {
-						summary: "Not Found",
-						description: "Not Found",
 						schema: z.object({
 							message: z.string(),
 						}),
@@ -648,10 +646,10 @@ describe("helpers.ts", () => {
 		test("should throw error for invalid response status", () => {
 			const spec: SpecItem = {
 				format: "json",
+				summary: "OK",
+				description: "OK",
 				responses: {
 					200: {
-						summary: "OK",
-						description: "OK",
 						schema: z.object({
 							message: z.string(),
 						}),
@@ -673,10 +671,10 @@ describe("helpers.ts", () => {
 		test("should validate content types", () => {
 			const spec: SpecItem = {
 				format: "json",
+				summary: "OK",
+				description: "OK",
 				responses: {
 					200: {
-						summary: "OK",
-						description: "OK",
 						schema: z.object({
 							message: z.string(),
 						}),
@@ -761,10 +759,10 @@ describe("helpers.ts", () => {
 						filter: z.string().optional(),
 					}),
 				},
+				summary: "Success",
+				description: "Successful response",
 				responses: {
 					200: {
-						summary: "Success",
-						description: "Successful response",
 						schema: z.string(),
 					},
 				},
@@ -774,6 +772,201 @@ describe("helpers.ts", () => {
 			expect(specItem.parameters?.path).toBeDefined();
 			expect(specItem.parameters?.query).toBeDefined();
 			expect(specItem.responses[200]).toBeDefined();
+		});
+	});
+
+	describe("Operation-level summary and description", () => {
+		test("should include operation-level summary and description when provided", () => {
+			const customSpec: CustomSpec = {
+				get: {
+					format: "json",
+					summary: "Get user information",
+					description: "Retrieves detailed user information by ID",
+					responses: {
+						200: {
+							schema: z.object({
+								id: z.string(),
+								name: z.string(),
+							}),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			expect(result["/"]).toBeDefined();
+			const pathItem = result["/"];
+			expect(pathItem?.get).toBeDefined();
+
+			const getOperation = pathItem?.get;
+			expect(getOperation?.summary).toBe("Get user information");
+			expect(getOperation?.description).toBe(
+				"Retrieves detailed user information by ID",
+			);
+		});
+
+		test("should fallback to first successful response summary/description when operation-level not provided", () => {
+			const customSpec: CustomSpec = {
+				post: {
+					format: "json",
+					description:
+						"A new user has been created with the provided information",
+					responses: {
+						201: {
+							schema: z.object({
+								id: z.string(),
+								name: z.string(),
+							}),
+						},
+						400: {
+							schema: z.object({
+								error: z.string(),
+							}),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			expect(result["/"]).toBeDefined();
+			const pathItem = result["/"];
+			expect(pathItem?.post).toBeDefined();
+
+			const postOperation = pathItem?.post;
+			expect(postOperation?.summary).toBe("API Operation");
+			expect(postOperation?.description).toBe(
+				"A new user has been created with the provided information",
+			);
+		});
+
+		test("should prefer 200 response over other status codes for fallback", () => {
+			const customSpec: CustomSpec = {
+				get: {
+					format: "json",
+					description: "User data operations",
+					responses: {
+						404: {
+							schema: z.object({
+								error: z.string(),
+							}),
+						},
+						200: {
+							schema: z.object({
+								id: z.string(),
+								name: z.string(),
+							}),
+						},
+						500: {
+							schema: z.object({
+								error: z.string(),
+							}),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			expect(result["/"]).toBeDefined();
+			const pathItem = result["/"];
+			expect(pathItem?.get).toBeDefined();
+
+			const getOperation = pathItem?.get;
+			expect(getOperation?.summary).toBe("API Operation");
+			expect(getOperation?.description).toBe("User data operations");
+		});
+
+		test("should fallback to first response when no successful status codes exist", () => {
+			const customSpec: CustomSpec = {
+				delete: {
+					format: "json",
+					description: "User not found",
+					responses: {
+						404: {
+							schema: z.object({
+								error: z.string(),
+							}),
+						},
+						500: {
+							schema: z.object({
+								error: z.string(),
+							}),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			expect(result["/"]).toBeDefined();
+			const pathItem = result["/"];
+			expect(pathItem?.delete).toBeDefined();
+
+			const deleteOperation = pathItem?.delete;
+			expect(deleteOperation?.summary).toBe("API Operation");
+			expect(deleteOperation?.description).toBe("User not found");
+		});
+
+		test("should mix operation-level and response-level fallback correctly", () => {
+			const customSpec: CustomSpec = {
+				patch: {
+					format: "json",
+					summary: "Update user", // Operation-level summary provided
+					// No operation-level description, should fallback to response
+					description: "User updated successfully with new information",
+					responses: {
+						200: {
+							schema: z.object({
+								id: z.string(),
+								name: z.string(),
+							}),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			expect(result["/"]).toBeDefined();
+			const pathItem = result["/"];
+			expect(pathItem?.patch).toBeDefined();
+
+			const patchOperation = pathItem?.patch;
+			expect(patchOperation?.summary).toBe("Update user"); // From operation level
+			expect(patchOperation?.description).toBe(
+				"User updated successfully with new information",
+			); // From response fallback
+		});
+
+		test("should work with all successful status codes for fallback", () => {
+			const customSpec: CustomSpec = {
+				put: {
+					format: "json",
+					description: "Request accepted and will be processed asynchronously",
+					responses: {
+						202: {
+							schema: z.object({
+								id: z.string(),
+								status: z.string(),
+							}),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			expect(result["/"]).toBeDefined();
+			const pathItem = result["/"];
+			expect(pathItem?.put).toBeDefined();
+
+			const putOperation = pathItem?.put;
+			expect(putOperation?.summary).toBe("API Operation");
+			expect(putOperation?.description).toBe(
+				"Request accepted and will be processed asynchronously",
+			);
 		});
 	});
 });

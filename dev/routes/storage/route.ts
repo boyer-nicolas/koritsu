@@ -16,10 +16,10 @@ export const GET = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Storage"],
+		summary: "List all storage items",
+		description: "Retrieves a list of all available storage items",
 		responses: {
 			200: {
-				summary: "List all storage items",
-				description: "Retrieves a list of all available storage items",
 				schema: bucketListSchema,
 			},
 		},
@@ -37,6 +37,8 @@ export const POST = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Storage"],
+		summary: "Create storage item",
+		description: "Create a new storage bucket with the specified name",
 		parameters: {
 			body: z.object({
 				name: z.string().describe("The name of the storage bucket"),
@@ -44,14 +46,9 @@ export const POST = createRoute({
 		},
 		responses: {
 			201: {
-				summary: "Storage item created successfully",
-				description: "The storage item was created successfully",
 				schema: createBucketSchema,
 			},
 			400: {
-				summary: "Bad request - missing or invalid data",
-				description:
-					"The request body is missing required fields or has invalid data",
 				schema: z.object({
 					error: z.string().default("Invalid request"),
 					message: z

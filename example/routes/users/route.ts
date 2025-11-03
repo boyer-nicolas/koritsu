@@ -36,6 +36,8 @@ export const GET = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Users"],
+		summary: "Get all users",
+		description: "Retrieve all users with optional filtering and pagination",
 		parameters: {
 			query: z.object({
 				limit: z.coerce
@@ -52,8 +54,6 @@ export const GET = createRoute({
 		},
 		responses: {
 			200: {
-				summary: "Users retrieved successfully",
-				description: "Users retrieved successfully",
 				schema: z.object({
 					users: z.array(
 						z.object({
@@ -88,6 +88,8 @@ export const POST = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Users"],
+		summary: "Create user",
+		description: "Create a new user with the provided information",
 		parameters: {
 			body: z.object({
 				name: z.string().min(1).max(100).describe("User's full name"),
@@ -96,8 +98,6 @@ export const POST = createRoute({
 		},
 		responses: {
 			201: {
-				summary: "User created successfully",
-				description: "User created successfully",
 				schema: z.object({
 					id: z.string(),
 					name: z.string(),

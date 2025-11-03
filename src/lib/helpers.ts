@@ -1,5 +1,6 @@
 import type { OpenAPIV3_1 } from "openapi-types";
 import { z } from "zod";
+import { AppConfig } from "./config";
 
 // Type helpers for extracting types from Zod schemas
 type InferZodType<T> = T extends z.ZodType<infer U> ? U : never;
@@ -35,6 +36,8 @@ type ExtractBodyType<TSpec extends SpecItem> = TSpec["parameters"] extends {
 export type SpecItem = {
 	format: "json" | "text";
 	tags?: string[];
+	summary?: string;
+	description?: string;
 	parameters?: {
 		path?: z.ZodType;
 		query?: z.ZodType;
@@ -43,8 +46,6 @@ export type SpecItem = {
 	};
 	responses: {
 		[key: number]: {
-			summary: string;
-			description: string;
 			schema: z.ZodType;
 		};
 	};
@@ -173,7 +174,9 @@ export function zodToOpenAPISchema(
 
 			default:
 				// Fallback for unsupported types
-				console.warn(`Unsupported Zod type: ${type}`);
+				if (AppConfig.get().server.logLevel === "debug") {
+					console.debug(`Unsupported Zod type: ${type}`);
+				}
 				baseSchema = { type: "object" };
 		}
 
@@ -188,6 +191,30 @@ export function zodToOpenAPISchema(
 		// Fallback for any errors
 		return { type: "object" };
 	}
+}
+
+/**
+ * Generates a default description for HTTP status codes
+ */
+function generateResponseDescription(statusCode: number): string {
+	const descriptions: Record<number, string> = {
+		200: "Successful response",
+		201: "Created successfully",
+		202: "Accepted for processing",
+		204: "No content",
+		400: "Bad request",
+		401: "Unauthorized",
+		403: "Forbidden",
+		404: "Not found",
+		405: "Method not allowed",
+		409: "Conflict",
+		422: "Unprocessable entity",
+		500: "Internal server error",
+		502: "Bad gateway",
+		503: "Service unavailable",
+	};
+	
+	return descriptions[statusCode] || `HTTP ${statusCode} response`;
 }
 
 /**
@@ -210,7 +237,7 @@ export function customSpecToOpenAPI(
 			const status = statusCode.toString();
 
 			responses[status] = {
-				description: responseSpec.description,
+				description: generateResponseDescription(Number(status)),
 				content: {
 					[specItem.format === "json" ? "application/json" : "text/plain"]: {
 						schema: zodToOpenAPISchema(responseSpec.schema),
@@ -222,6 +249,41 @@ export function customSpecToOpenAPI(
 		const operationObject: OpenAPIV3_1.OperationObject = {
 			responses,
 		};
+
+		// Add summary and description if they exist at the operation level
+		if (specItem.summary) {
+			operationObject.summary = specItem.summary;
+		}
+		if (specItem.description) {
+			operationObject.description = specItem.description;
+		}
+
+		// If no operation-level summary/description, provide defaults
+		if (!operationObject.summary) {
+			operationObject.summary = "API Operation";
+		}
+		if (!operationObject.description) {
+			// Use operation-level description or fall back to a default based on the first successful response
+			const successStatusCodes = [200, 201, 202, 204];
+			let defaultDescription = "Performs an API operation";
+
+			for (const statusCode of successStatusCodes) {
+				if (specItem.responses[statusCode]) {
+					defaultDescription = generateResponseDescription(statusCode);
+					break;
+				}
+			}
+
+			// If no successful response found, use the first response
+			if (defaultDescription === "Performs an API operation") {
+				const firstResponseKey = Object.keys(specItem.responses)[0];
+				if (firstResponseKey) {
+					defaultDescription = generateResponseDescription(Number(firstResponseKey));
+				}
+			}
+
+			operationObject.description = defaultDescription;
+		}
 
 		// Add tags if they exist
 		if (specItem.tags && specItem.tags.length > 0) {

@@ -16,22 +16,24 @@ export const GET = createRoute({
 	spec: {
 		format: "json",
 		tags: ["Storage"],
+		summary: "Get storage bucket details",
+		description:
+			"Retrieve detailed information about a specific storage bucket",
 		parameters: {
 			path: z.object({
-				id: z.string().describe("The bucket ID"),
+				id: z.string().describe("The unique identifier of the storage bucket"),
 			}),
 		},
 		responses: {
 			200: {
-				summary: "Storage bucket details",
-				description: "Details of the storage bucket",
 				schema: singleBucketSchema,
 			},
 			404: {
-				summary: "Bucket not found",
-				description: "The requested bucket was not found",
 				schema: z.object({
-					error: z.string().default("Bucket not found"),
+					error: z.string().default("Not Found"),
+					message: z
+						.string()
+						.default("The requested storage bucket was not found"),
 				}),
 			},
 		},
