@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.18
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.17...v0.0.18)
+
+### 🚀 Enhancements
+
+- Openapi groups ([#30](https://github.com/boyer-nicolas/ombrage-bun-api/pull/30))
+
+### ❤️ Contributors
+
+- Nicolas Boyer ([@boyer-nicolas](https://github.com/boyer-nicolas))
+
 ## v0.0.17
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.16...v0.0.17)
