@@ -87,10 +87,10 @@ Once the server is running, visit:
      },
      spec: {
       format: "json",
+      summary: "User Profile",
+      description: "User profile retrieved successfully",
       responses: {
         200: {
-          summary: "User Profile",
-          description: "User profile retrieved successfully",
           schema: profileSchema, // Zod schema for automatic documentation
       }
      },
@@ -158,6 +158,9 @@ export const GET = createRoute({
     return Response.json(users);
   },
   spec: {
+    format: "json",
+    summary: "Get user by ID with optional filters",
+    description: "User data with filters applied",
     parameters: z.object({
       // Path parameters (from dynamic routes like [id])
       path: z.object({
@@ -183,9 +186,7 @@ export const GET = createRoute({
       }),
     }),
     responses: {
-      "200": {
-        summary: "Get user by ID with optional filters",
-        description: "User data with filters applied",
+      200: {
         // ... response schema
       },
     },
@@ -208,6 +209,9 @@ export const POST = createRoute({
     return Response.json(newUser, { status: 201 });
   },
   spec: {
+    format: "json",
+    summary: "Create a new user",
+    description: "Creates a new user with the provided information",
     parameters: z.object({
       // Request body validation
       body: z.object({
@@ -218,9 +222,7 @@ export const POST = createRoute({
       }),
     }),
     responses: {
-      "201": {
-        summary: "Create a new user",
-        description: "Creates a new user with the provided information",
+      201: {
         schema: z.object({
           id: z.string().uuid(),
           name: z.string(),
@@ -229,7 +231,7 @@ export const POST = createRoute({
           createdAt: z.string(),
         }),
       },
-      "400": {
+      400: {
         description: "Invalid request data",
       },
     },
@@ -332,6 +334,8 @@ export const POST = createRoute({
     return Response.json(newUser, { status: 201 });
   },
   spec: {
+    format: "json",
+    summary: "Create a new user",
     description: "Creates a new user with the provided information",
     parameters: z.object({
       body: z.object({
@@ -355,9 +359,7 @@ export const POST = createRoute({
       }),
     }),
     responses: {
-      "201": {
-        summary: "Create a new user",
-        description: "Creates a new user with the provided information",
+      201: {
         schema: z.object({
           id: z.string().uuid(),
           name: z.string(),
@@ -365,7 +367,7 @@ export const POST = createRoute({
           createdAt: z.string(),
         }),
       },
-      "400": {
+      400: {
         description: "Invalid request data or validation failed",
       },
     },
@@ -388,6 +390,9 @@ export const PUT = createRoute({
     return Response.json(updatedUser);
   },
   spec: {
+    format: "json",
+    summary: "Update an existing user",
+    description: "Updates user information with the provided data",
     parameters: z.object({
       path: z.object({
         id: z.string().uuid().describe("User ID to update"),
@@ -415,9 +420,7 @@ export const PUT = createRoute({
         }),
     }),
     responses: {
-      "200": {
-        summary: "Update user information",
-        description: "Creates a new user with the provided information",
+      200: {
         schema: z.object({
           id: z.string().uuid(),
           name: z.string(),
@@ -425,11 +428,21 @@ export const PUT = createRoute({
           updatedAt: z.string(),
         }),
       },
-      "400": {
-        description: "Invalid request data",
+      400: {
+        schema: z.object({
+          error: z.string(),
+          details: z.array(
+            z.object({
+              code: z.string(),
+              message: z.string(),
+            })
+          ),
+        }),
       },
-      "404": {
-        description: "User not found",
+      404: {
+        schema: z.object({
+          error: z.string(),
+        }),
       },
     },
   },
@@ -659,7 +672,9 @@ export const GET = createRoute({
     }
   },
   spec: {
-    description: "Retrieve a specific user with optional related data",
+    format: "json",
+    summary: "Get user by ID with optional includes",
+    description: "Fetches user data along with requested related information",
     parameters: z.object({
       path: z.object({
         id: z.string().uuid().describe("User's UUID"),
@@ -678,31 +693,51 @@ export const GET = createRoute({
       }),
     }),
     responses: {
-      "200": {
-        summary: "Get user by ID with optional includes",
-        description:
-          "Fetches user data along with requested related information",
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              properties: {
-                id: { type: "string", format: "uuid" },
-                name: { type: "string" },
-                email: { type: "string", format: "email" },
-                profile: { type: "object" },
-                posts: { type: "array" },
-                followers: { type: "array" },
-              },
-            },
-          },
-        },
+      200: {
+        schema: z.object({
+          id: z.string().uuid(),
+          name: z.string(),
+          email: z.string().email(),
+          profile: z
+            .object({
+              bio: z.string(),
+              website: z.string().url(),
+            })
+            .optional(),
+          posts: z
+            .array(
+              z.object({
+                id: z.string().uuid(),
+                title: z.string(),
+                content: z.string(),
+              })
+            )
+            .optional(),
+          followers: z
+            .array(
+              z.object({
+                id: z.string().uuid(),
+                name: z.string(),
+              })
+            )
+            .optional(),
+        }),
       },
-      "400": {
-        description: "Invalid parameters",
+      400: {
+        schema: z.object({
+          error: z.string(),
+          details: z.array(
+            z.object({
+              code: z.string(),
+              message: z.string(),
+            })
+          ),
+        }),
       },
-      "404": {
-        description: "User not found",
+      404: {
+        schema: z.object({
+          error: z.string(),
+        }
       },
     },
   },
@@ -777,10 +812,10 @@ export const GET = createRoute({
   spec: {
     format: "json",
     tags: ["Users", "Authentication"], // Multiple tags supported
+    summary: "Get user data",
+    description: "Retrieve user information",
     responses: {
       200: {
-        summary: "Get user data",
-        description: "Retrieve user information",
         schema: z.object({
           message: z.string(),
         }),
