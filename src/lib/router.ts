@@ -8,6 +8,7 @@ import {
 	generateOpenAPIFromCustomSpec,
 	type SpecItem,
 } from "./helpers";
+import { getLogger, type Logger } from "./logger";
 
 interface RouteModule {
 	path: string;
@@ -19,10 +20,12 @@ export class FileRouter {
 	public routes: Map<string, RouteModule> = new Map();
 	public basePath: string;
 	public config: Config;
+	private logger: Logger;
 
 	constructor(config: Config) {
-		this.basePath = resolve(config.server.routesDir);
+		this.basePath = resolve(config.server.routes.dir);
 		this.config = config;
+		this.logger = getLogger();
 	}
 
 	/**
@@ -56,7 +59,7 @@ export class FileRouter {
 				}
 			}
 		} catch (error) {
-			console.warn(`Failed to scan directory ${dirPath}:`, error);
+			this.logger.warn(error, `Failed to scan directory ${dirPath}:`);
 		}
 	}
 
@@ -144,7 +147,7 @@ export class FileRouter {
 			try {
 				await this.loadRouteModule(routeModule);
 			} catch (error) {
-				console.error(`Failed to load route at ${path}:`, error);
+				this.logger.error(error, `Failed to load route at ${path}:`);
 			}
 		}
 	}
@@ -157,6 +160,39 @@ export class FileRouter {
 		if (routeModule.routeFile) {
 			const routeModuleImport = await import(routeModule.routeFile);
 			routeModule.routes = routeModuleImport;
+		}
+	}
+
+	async handleStaticRequest(pathname: string): Promise<Response> {
+		const logger = getLogger();
+		if (!this.config.server.static?.dir) {
+			throw new Error("Static directory is not configured");
+		}
+
+		const staticFilePath = resolve(
+			this.config.server.static.dir,
+			`.${pathname}`,
+		);
+
+		try {
+			const file = Bun.file(staticFilePath);
+			const bytes = await file.bytes();
+
+			return new Response(bytes, {
+				headers: {
+					"Content-Type": file.type || "application/octet-stream",
+				},
+				status: 200,
+			});
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			if (errorMessage.includes("ENOENT")) {
+				logger.warn(`Static file not found: ${staticFilePath}`);
+				return new Response("Not Found", { status: 404 });
+			}
+			logger.error(`Error serving static file: ${errorMessage}`);
+			return new Response(`Error: ${errorMessage}`, { status: 500 });
 		}
 	}
 
@@ -246,7 +282,7 @@ export class FileRouter {
 				headers,
 			});
 		} catch (error) {
-			console.error(`Error handling ${method} ${path}:`, error);
+			this.logger.error(error, `Error handling ${method} ${path}:`);
 			return Response.json(
 				{
 					error: "Internal Server Error",
@@ -331,7 +367,8 @@ export class FileRouter {
 		const baseSpec: OpenAPIV3_1.Document = {
 			openapi: "3.1.0",
 			info: {
-				title: this.config.title,
+				// biome-ignore lint/style/noNonNullAssertion: Has a default value
+				title: this.config.title!,
 				description: this.config.description,
 				version: packageJson.version,
 			},
@@ -403,9 +440,9 @@ export class FileRouter {
 						this.processInlineSpecs(path, methodSpecs, baseSpec);
 					}
 				} catch (error) {
-					console.warn(
-						`Failed to process inline specs for route ${path}:`,
+					this.logger.warn(
 						error,
+						`Failed to process inline specs for route ${path}:`,
 					);
 				}
 			}
@@ -447,7 +484,8 @@ export class FileRouter {
 
 		// Convert CustomSpec to OpenAPI format
 		const openAPIFromCustom = generateOpenAPIFromCustomSpec(customSpec, {
-			title: this.config.title,
+			// biome-ignore lint/style/noNonNullAssertion: Has a default value
+			title: this.config.title!,
 			version: packageJson.version,
 			description: this.config.description,
 		});

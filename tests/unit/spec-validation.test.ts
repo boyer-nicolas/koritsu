@@ -28,9 +28,6 @@ describe("createRoute with spec validation", () => {
 
 		const request = new Request("http://localhost/test", { method: "POST" });
 
-		// This should throw an error in development environment
-		process.env.ENVIRONMENT = "development";
-
 		// Test the callback directly as an async function
 		if (route.callback) {
 			const mockProps = {

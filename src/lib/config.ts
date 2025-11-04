@@ -1,7 +1,9 @@
 import { z } from "zod";
 
+let configInstance: Config | null = null;
+
 const booleanFromString = z
-	.union([z.boolean(), z.string()])
+	.union([z.boolean("Please provide a valid boolean"), z.string()])
 	.transform((val) => {
 		if (typeof val === "boolean") return val;
 		if (typeof val === "string") {
@@ -27,118 +29,85 @@ const numberFromString = z.union([z.number(), z.string()]).transform((val) => {
 });
 
 export const ConfigSchema = z.object({
-	server: z
-		.object({
-			port: numberFromString.pipe(z.number().min(1).max(65535)).default(8080),
-			host: z.string().default("0.0.0.0"),
-			logLevel: z.enum(["debug", "info", "warn", "error"]).default("info"),
-			routesDir: z.string().default("./routes"),
-		})
-		.default({
-			port: 8080,
-			host: "0.0.0.0",
-			logLevel: "info" as const,
-			routesDir: "./routes",
+	server: z.object({
+		port: numberFromString
+			.pipe(z.number("Please provide a valid port number").min(1).max(65535))
+			.default(8080)
+			.optional(),
+		host: z.string("Please provide a valid host").default("0.0.0.0").optional(),
+		logLevel: z
+			.enum(
+				["debug", "info", "warn", "error"],
+				"Please provide a valid log level",
+			)
+			.default("info")
+			.optional(),
+		routes: z.object({
+			dir: z
+				.string("Please provide a valid routes directory")
+				.default("./routes"),
+			basePath: z
+				.string("Please provide a valid base path")
+				.default("/")
+				.optional(),
 		}),
+		static: z
+			.object({
+				dir: z
+					.string("Please provide a valid static files directory")
+					.default("./static")
+					.optional(),
+				enabled: booleanFromString.default(true).optional(),
+				basePath: z
+					.string("Please provide a valid static files base path")
+					.default("/static")
+					.optional(),
+			})
+			.optional(),
+	}),
 	swagger: z
 		.object({
-			enabled: booleanFromString.default(true),
-			path: z.string().default("/"),
+			enabled: booleanFromString.default(true).optional,
+			path: z
+				.string("Please provide a valid Swagger UI path")
+				.default("/")
+				.optional(),
 		})
-		.default({
-			enabled: true,
-			path: "/",
-		}),
-	title: z.string().default("My API"),
+		.optional(),
+	title: z
+		.string("Please provide a valid API title")
+		.default("My API")
+		.optional(),
 	description: z
-		.string()
-		.default("Auto-generated API documentation from route specifications"),
-	auth: z
-		.object({
-			enabled: booleanFromString.default(false),
-			secret: z.string().min(10).default("changeme"),
-		})
-		.default({
-			enabled: false,
-			secret: "changeme",
-		}),
+		.string("Please provide a valid API description")
+		.default("Auto-generated API documentation from route specifications")
+		.optional(),
 	environment: z
-		.enum(["development", "production", "test"])
-		.default("development"),
+		.enum(
+			["development", "production", "test"],
+			"Please provide a valid environment",
+		)
+		.default("development")
+		.optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
 
-// biome-ignore lint/complexity/noStaticOnlyClass: Exceptional for config
-export class AppConfig {
-	private static instance: Config;
-
-	private static validateConfig(config: unknown): Config {
-		const result = ConfigSchema.safeParse(config);
-		if (!result.success) {
-			console.error("Configuration validation error:", result.error.format());
-			throw new Error("Invalid configuration");
-		}
-		return result.data;
+export function validateConfig(config: unknown): Config {
+	const result = ConfigSchema.safeParse(config);
+	if (!result.success) {
+		console.error("Configuration validation error:", result.error);
+		console.error("Provided configuration:", config);
+		throw new Error("Invalid configuration");
 	}
 
-	static load(): void {
-		const rawConfig: unknown = {
-			...(process.env.PORT || process.env.HOST || process.env.LOG_LEVEL
-				? {
-						server: {
-							...(process.env.PORT ? { port: process.env.PORT } : {}),
-							...(process.env.HOST ? { host: process.env.HOST } : {}),
-							...(process.env.LOG_LEVEL
-								? { logLevel: process.env.LOG_LEVEL }
-								: {}),
-						},
-					}
-				: {}),
-			...(process.env.SWAGGER_ENABLED || process.env.SWAGGER_PATH
-				? {
-						swagger: {
-							...(process.env.SWAGGER_ENABLED
-								? { enabled: process.env.SWAGGER_ENABLED }
-								: {}),
-							...(process.env.SWAGGER_PATH
-								? { path: process.env.SWAGGER_PATH }
-								: {}),
-						},
-					}
-				: {}),
-			...(process.env.AUTH_ENABLED || process.env.AUTH_SECRET
-				? {
-						auth: {
-							...(process.env.AUTH_ENABLED
-								? { enabled: process.env.AUTH_ENABLED }
-								: {}),
-							...(process.env.AUTH_SECRET
-								? { secret: process.env.AUTH_SECRET }
-								: {}),
-						},
-					}
-				: {}),
-			...(process.env.API_TITLE ? { title: process.env.API_TITLE } : {}),
-			...(process.env.API_DESCRIPTION
-				? { description: process.env.API_DESCRIPTION }
-				: {}),
-			...(process.env.ENVIRONMENT
-				? { environment: process.env.ENVIRONMENT }
-				: {}),
-		};
-
-		// Let Zod parse and apply defaults for any missing values
-		AppConfig.instance = AppConfig.validateConfig(rawConfig);
-	}
-
-	static get(): Config {
-		if (!AppConfig.instance) {
-			throw new Error("Config not loaded. Call AppConfig.load() first.");
-		}
-		return AppConfig.instance;
-	}
+	configInstance = result.data;
+	return result.data;
 }
 
-// Load configuration at module initialization
-AppConfig.load();
+export function getConfig(): Config {
+	if (!configInstance) {
+		throw new Error("Configuration has not been loaded yet.");
+	}
+	return configInstance;
+}

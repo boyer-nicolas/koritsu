@@ -1,17 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import path from "node:path";
-import { AppConfig, type OmbrageServer, Server } from "ombrage-bun-api";
+import { type OmbrageServer, Api } from "ombrage-bun-api";
 
 describe("Example API Integration Tests", () => {
 	let server: OmbrageServer;
 	let baseUrl: string;
 
 	beforeAll(async () => {
-		AppConfig.load();
-
 		// Create server instance using the example routes
 		const routesDir = path.join(__dirname, "..", "routes");
-		const serverInstance = new Server({
+		const serverInstance = new Api({
 			server: {
 				routesDir,
 			},

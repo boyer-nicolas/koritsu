@@ -1,6 +1,7 @@
 import type { OpenAPIV3_1 } from "openapi-types";
 import { z } from "zod";
-import { AppConfig } from "./config";
+import { getConfig } from "./config";
+import { getLogger } from "./logger";
 
 // Type helpers for extracting types from Zod schemas
 type InferZodType<T> = T extends z.ZodType<infer U> ? U : never;
@@ -61,10 +62,11 @@ export type CustomSpec = {
 export function zodToOpenAPISchema(
 	zodSchema: z.ZodType,
 ): OpenAPIV3_1.SchemaObject {
+	const logger = getLogger();
 	try {
 		// Check if zodSchema is valid
 		if (!zodSchema || typeof zodSchema !== "object" || !zodSchema._def) {
-			console.warn("Invalid Zod schema provided:", zodSchema);
+			logger.warn(zodSchema, "Invalid Zod schema provided:");
 			return { type: "object" };
 		}
 
@@ -73,12 +75,14 @@ export function zodToOpenAPISchema(
 
 		// Check if type is defined
 		if (!type) {
-			console.warn("Zod schema missing type:", def);
+			logger.warn(def, "Zod schema missing type:");
 			return { type: "object" };
 		}
 
 		const description = (zodSchema as z.ZodType & { description?: string })
 			.description;
+
+		const config = getConfig();
 
 		let baseSchema: OpenAPIV3_1.SchemaObject;
 
@@ -174,8 +178,8 @@ export function zodToOpenAPISchema(
 
 			default:
 				// Fallback for unsupported types
-				if (AppConfig.get().server.logLevel === "debug") {
-					console.debug(`Unsupported Zod type: ${type}`);
+				if (config.server.logLevel === "debug") {
+					logger.debug(`Unsupported Zod type: ${type}`);
 				}
 				baseSchema = { type: "object" };
 		}
@@ -187,7 +191,7 @@ export function zodToOpenAPISchema(
 
 		return baseSchema;
 	} catch (error) {
-		console.warn("Error parsing Zod schema:", error);
+		logger.warn(error, "Error parsing Zod schema:");
 		// Fallback for any errors
 		return { type: "object" };
 	}
@@ -487,6 +491,8 @@ export function createRoute<TSpec extends SpecItem | undefined = undefined>({
 	// If spec is provided, wrap the callback with validation
 	const wrappedCallback = spec
 		? async (props: RouteProps<undefined>): Promise<Response> => {
+				const logger = getLogger();
+				const config = getConfig();
 				// Validate and parse parameters according to spec
 				const validatedProps = await validateAndParseParameters(props, spec);
 
@@ -498,16 +504,12 @@ export function createRoute<TSpec extends SpecItem | undefined = undefined>({
 				} catch (error) {
 					const errorMessage =
 						error instanceof Error ? error.message : String(error);
-					console.error(
-						`OpenAPI spec validation failed for ${method.toUpperCase()}:`,
-						errorMessage,
+					logger.error(
+						`OpenAPI spec validation failed for ${method.toUpperCase()}: ${errorMessage}`,
 					);
 
 					// In development, throw the error to help with debugging
-					if (
-						process.env.NODE_ENV === "development" ||
-						process.env.ENVIRONMENT === "development"
-					) {
+					if (config.environment === "development") {
 						throw error;
 					}
 

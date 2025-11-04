@@ -2,18 +2,14 @@ import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { AppConfig } from "../../src/lib/config";
-import { Server } from "../../src/lib/server";
+import { Api } from "../../src/lib/api";
 
 describe("server.ts", () => {
-	let server: Server;
+	let server: Api;
 	let tempDir: string;
 	let routesDir: string;
 
 	beforeEach(async () => {
-		// Load AppConfig with defaults before creating server instances
-		AppConfig.load();
-
 		// Create temporary directory for testing
 		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "ombrage-test-"));
 		routesDir = path.join(tempDir, "routes");
@@ -43,9 +39,11 @@ describe("server.ts", () => {
 				}
 			});`,
 		);
-		server = new Server({
+		server = new Api({
 			server: {
-				routesDir,
+				routes: {
+					dir: routesDir,
+				},
 				port: 0,
 			},
 		});
@@ -60,17 +58,12 @@ describe("server.ts", () => {
 
 	describe("configuration output", () => {
 		test("should not output config when log level is not debug", async () => {
-			const originalLog = console.log;
-			const originalLogLevel = process.env.LOG_LEVEL;
 			const logMock = mock(() => {});
 			console.log = logMock;
 
-			// Set info log level
-			process.env.LOG_LEVEL = "info";
-			AppConfig.load();
-			const infoServer = new Server({
+			const infoServer = new Api({
 				server: {
-					routesDir,
+					routes: { dir: routesDir },
 					logLevel: "info",
 					port: 0,
 				},
@@ -83,16 +76,12 @@ describe("server.ts", () => {
 				call[0]?.toString?.().includes("Configuration:"),
 			);
 			expect(configCalls).toHaveLength(0);
-
-			// Restore
-			console.log = originalLog;
-			process.env.LOG_LEVEL = originalLogLevel;
 		});
 	});
 
 	describe("Server constructor", () => {
 		test("should initialize server instance", () => {
-			expect(server).toBeInstanceOf(Server);
+			expect(server).toBeInstanceOf(Api);
 		});
 	});
 
@@ -116,7 +105,7 @@ describe("server.ts", () => {
 
 	describe("stop", () => {
 		test("should be a static method", () => {
-			expect(typeof Server.stop).toBe("function");
+			expect(typeof Api.stop).toBe("function");
 		});
 
 		test("should handle shutdown gracefully", () => {
@@ -127,7 +116,7 @@ describe("server.ts", () => {
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			process.exit = mock(() => {}) as any;
 
-			Server.stop();
+			Api.stop();
 
 			expect(console.log).toHaveBeenCalledWith(
 				"==> Shutting down gracefully...",
@@ -142,7 +131,7 @@ describe("server.ts", () => {
 		test("should stop server if it exists", () => {
 			const mockStop = mock(() => {});
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
-			Server.instance = { stop: mockStop } as any;
+			Api.instance = { stop: mockStop } as any;
 
 			const originalLog = console.log;
 			const originalExit = process.exit;
@@ -151,14 +140,14 @@ describe("server.ts", () => {
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			process.exit = mock(() => {}) as any;
 
-			Server.stop();
+			Api.stop();
 
 			expect(mockStop).toHaveBeenCalled();
 
 			// Restore
 			console.log = originalLog;
 			process.exit = originalExit;
-			Server.instance = undefined;
+			Api.instance = undefined;
 		});
 	});
 
@@ -215,15 +204,15 @@ describe("server.ts", () => {
 
 	describe("signal handlers", () => {
 		test("should have stop method available for signal handlers", () => {
-			expect(typeof Server.stop).toBe("function");
+			expect(typeof Api.stop).toBe("function");
 		});
 	});
 
 	describe("server fetch function", () => {
 		test("should have fetch function defined", async () => {
-			const server = new Server({
+			const server = new Api({
 				server: {
-					routesDir,
+					routes: { dir: routesDir },
 					logLevel: "info",
 					port: 0,
 				},
@@ -239,9 +228,9 @@ describe("server.ts", () => {
 			const logMock = mock(() => {});
 			console.log = logMock;
 
-			const server = new Server({
+			const server = new Api({
 				server: {
-					routesDir,
+					routes: { dir: routesDir },
 					logLevel: "info",
 					port: 0,
 				},
@@ -278,9 +267,9 @@ describe("server.ts", () => {
 		});
 
 		test("should have swagger request handling", async () => {
-			const server = new Server({
+			const server = new Api({
 				server: {
-					routesDir,
+					routes: { dir: routesDir },
 					logLevel: "info",
 					port: 0,
 				},
@@ -302,7 +291,7 @@ describe("server.ts", () => {
 
 	describe("Server static properties", () => {
 		test("should have instance property for storing server instance", () => {
-			expect(Server.instance).toBeUndefined();
+			expect(Api.instance).toBeUndefined();
 		});
 	});
 });

@@ -1,24 +1,18 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { OpenAPIV3_1 } from "openapi-types";
-import { AppConfig } from "../../src/lib/config";
-import { type OmbrageServer, Server } from "../../src/lib/server";
+import { type OmbrageServer, Api } from "../../src/lib/api";
 
 describe("Server Integration Tests", () => {
 	let server: OmbrageServer;
 	let baseURL: string;
 
 	beforeAll(async () => {
-		(Bun.env as Record<string, string | undefined>).ENVIRONMENT = "test";
-		(Bun.env as Record<string, string | undefined>).LOG_LEVEL = "error";
-		(Bun.env as Record<string, string | undefined>).AUTH_SECRET =
-			"test-secret-for-integration-tests";
-
-		AppConfig.load();
-
 		// Start server with dev routes on a random available port
-		const serverInstance = new Server({
+		const serverInstance = new Api({
 			server: {
-				routesDir: "./dev/routes",
+				routes: {
+					dir: "./dev/routes",
+				},
 				port: 0,
 			},
 		});

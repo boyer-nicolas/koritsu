@@ -1,10 +1,19 @@
-import { Server } from "../src";
+import { Api } from "../src";
 
-new Server({
+new Api({
 	server: {
 		port: 8080,
-		routesDir: "./dev/routes",
-		logLevel: "debug",
+		routes: {
+			dir: "./dev/routes",
+			basePath: "/",
+		},
+		logLevel: "info",
+		static: {
+			dir: "./dev/public",
+			enabled: true,
+			basePath: "/static",
+		},
 	},
 	title: "Dev API Server",
+	environment: "development",
 }).start();
