@@ -1,4 +1,4 @@
-import { validateConfig, type Config } from "./config";
+import { validateConfig, type Config, type ConfigInput } from "./config";
 import { getLogger, type Logger } from "./logger";
 import { FileRouter } from "./router";
 
@@ -10,10 +10,10 @@ export class Api {
 	static instance?: OmbrageServer;
 	private logger: Logger;
 
-	constructor(config: Config) {
+	constructor(config: ConfigInput) {
 		this.config = validateConfig(config);
 		this.fileRouter = new FileRouter(this.config);
-		this.logger = getLogger(config.server.logLevel);
+		this.logger = getLogger(this.config.server.logLevel);
 	}
 
 	async init(): Promise<Bun.Serve.Options<undefined, string>> {

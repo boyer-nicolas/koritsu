@@ -1,11 +1,11 @@
 
-import { createRoute } from "ombrage-bun-api";
+import { createRoute } from "../../../src";
 import z from "zod";
 
 export const GET = createRoute({
 	method: "GET",
 	callback: async () => {
-		return Response.json("OK");
+		return new Response("OK");
 	},
 	spec: {
 		format: "text",

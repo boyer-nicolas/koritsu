@@ -21,8 +21,16 @@ export const getLogger = (level?: Config["server"]["logLevel"]) => {
 			const color = colors[msgLevel as keyof typeof colors] || "";
 			const levelLabel = `[${msgLevel.toUpperCase()}]`;
 			
+			// Map log levels to valid console methods
+			const consoleMethod = 
+				msgLevel === "fatal" ? "error" :
+				msgLevel === "warning" ? "warn" :
+				msgLevel === "trace" ? "log" :
+				msgLevel === "http" ? "info" :
+				msgLevel as keyof typeof console;
+			
 			// biome-ignore lint/suspicious/noExplicitAny: Logging utility
-			(console as any)[msgLevel === "fatal" ? "error" : msgLevel === "http" ? "info" : msgLevel](
+			(console as any)[consoleMethod](
 				`${color}${levelLabel}${colors.reset}`,
 				...args
 			);

@@ -1,29 +1,7 @@
 # Configuration Options
-## Through Environment Variables
 
-The following environment variables can be used to configure the application:
+This document outlines the available configuration options for the Ombrage Bun API server. You can configure the server using environment variables or by providing a configuration object when initializing the server.
 
-- **PORT**: `number`
-
-- **HOST**: `string`
-
-- **LOG_LEVEL**: `"debug" | "info" | "warn" | "error"`
-
-- **SWAGGER_ENABLED**: `boolean`
-
-- **SWAGGER_PATH**: `string`
-
-- **API_TITLE**: `string`
-
-- **API_DESCRIPTION**: `string`
-
-- **AUTH_ENABLED**: `boolean`
-
-- **AUTH_SECRET**: `string`
-
-- **ENVIRONMENT**: `"development" | "production" | "test"`
-
-## Through AppConfig
 
 You can also configure the application using the `AppConfig` class:
 
@@ -34,8 +12,16 @@ new Server({
   "server": {
     "port": 8080,
     "host": "0.0.0.0",
-    "logLevel": "debug",
-    "routesDir": "./routes"
+    "logLevel": "info",
+    "routes": {
+      "dir": "./routes",
+      "basePath": "/"
+    },
+    "static": {
+      "dir": "./static",
+      "enabled": false,
+      "basePath": "/static"
+    }
   },
   "swagger": {
     "enabled": true,
@@ -43,10 +29,6 @@ new Server({
   },
   "title": "My API",
   "description": "Auto-generated API documentation from route specifications",
-  "auth": {
-    "enabled": false,
-    "secret": "changeme"
-  },
   "environment": "development"
 }).start();
 

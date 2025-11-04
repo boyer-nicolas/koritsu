@@ -3,7 +3,7 @@
 [![CI](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml)
 [![NPM Version](https://img.shields.io/npm/v/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
 [![NPM Downloads](https://img.shields.io/npm/dm/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
-[![Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](./coverage/)
+[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen)](./coverage/)
 
 A powerful file-based routing system built with Bun, featuring automatic API documentation generation with Swagger UI.
 
@@ -22,17 +22,21 @@ A powerful file-based routing system built with Bun, featuring automatic API doc
 
 ```bash
 bun install ombrage-bun-api
+# or
+npm install ombrage-bun-api
 ```
 
 2. Create the server entry point
 
 ```typescript
 // index.ts
-import { Server } from "ombrage-bun-api";
+import { Api } from "ombrage-bun-api";
 
-new Server({
+new Api({
   server: {
-    routesDir: "./routes", // Directory containing your route files
+    routes: {
+      dir: "./routes", // Directory containing your route files
+    },
   },
 }).start();
 ```
@@ -41,7 +45,8 @@ new Server({
 
 ```typescript
 // routes/hello/route.ts
-import { createRoute } from "ombrage-bun-api/helpers";
+import { createRoute } from "ombrage-bun-api";
+
 export const GET = createRoute({
   method: "GET",
   callback: async () => {
@@ -58,8 +63,35 @@ bun run index.ts
 
 ## Configuration
 
-The server can be configured via options passed to the `Server` constructor or through environment variables.
+The server can be configured via options passed to the `Api` constructor or through environment variables.
 See the [Configuration Documentation](https://github.com/boyer-nicolas/ombrage-bun-api/blob/main/configuration.md) for a complete list of available configurations.
+
+### Basic Configuration
+
+```typescript
+import { Api } from "ombrage-bun-api";
+
+const server = new Api({
+  server: {
+    port: 8080,
+    host: "localhost",
+    routes: {
+      dir: "./routes",
+      basePath: "/api", // All routes will be prefixed with /api
+    },
+    static: {
+      enabled: true,
+      dir: "./public",
+      basePath: "/static",
+    },
+  },
+  title: "My API",
+  description: "A powerful API built with Ombrage",
+  environment: "development",
+});
+
+server.start();
+```
 
 ## API Documentation
 
@@ -67,7 +99,6 @@ Once the server is running, visit:
 
 - **Swagger UI**: http://localhost:8080
 - **OpenAPI JSON**: http://localhost:8080/api-docs.json
-- **Health Check**: http://localhost:8080/healthz
 
 ## Creating Routes
 
@@ -135,7 +166,7 @@ routes/
 
 ### Parameter Definition
 
-Use Zod schemas to define route parameters in your route specs. Ombrage API supports three types of parameters that are automatically extracted and validated:
+Use Zod schemas to define route parameters in your route specs. Ombrage API supports four types of parameters that are automatically extracted and validated:
 
 ```typescript
 export const GET = createRoute({
@@ -161,7 +192,7 @@ export const GET = createRoute({
     format: "json",
     summary: "Get user by ID with optional filters",
     description: "User data with filters applied",
-    parameters: z.object({
+    parameters: {
       // Path parameters (from dynamic routes like [id])
       path: z.object({
         id: z.string().describe("The unique user identifier"),
@@ -184,7 +215,7 @@ export const GET = createRoute({
         search: z.string().optional().describe("Search term to filter users"),
         active: z.boolean().default(true).describe("Filter by active status"),
       }),
-    }),
+    },
     responses: {
       200: {
         // ... response schema
@@ -212,7 +243,7 @@ export const POST = createRoute({
     format: "json",
     summary: "Create a new user",
     description: "Creates a new user with the provided information",
-    parameters: z.object({
+    parameters: {
       // Request body validation
       body: z.object({
         name: z.string().min(1).max(100).describe("User's full name"),
@@ -220,7 +251,7 @@ export const POST = createRoute({
         age: z.number().min(18).max(120).describe("User's age"),
         bio: z.string().optional().describe("Optional user biography"),
       }),
-    }),
+    },
     responses: {
       201: {
         schema: z.object({
@@ -337,7 +368,7 @@ export const POST = createRoute({
     format: "json",
     summary: "Create a new user",
     description: "Creates a new user with the provided information",
-    parameters: z.object({
+    parameters: {
       body: z.object({
         name: z.string().min(1).max(100).describe("User's full name"),
         email: z.string().email().describe("Valid email address"),
@@ -357,7 +388,7 @@ export const POST = createRoute({
           .optional()
           .describe("User preferences"),
       }),
-    }),
+    },
     responses: {
       201: {
         schema: z.object({
@@ -393,7 +424,7 @@ export const PUT = createRoute({
     format: "json",
     summary: "Update an existing user",
     description: "Updates user information with the provided data",
-    parameters: z.object({
+    parameters: {
       path: z.object({
         id: z.string().uuid().describe("User ID to update"),
       }),
@@ -418,7 +449,7 @@ export const PUT = createRoute({
         .refine((data) => Object.keys(data).length > 0, {
           message: "At least one field must be provided for update",
         }),
-    }),
+    },
     responses: {
       200: {
         schema: z.object({
@@ -912,7 +943,7 @@ The integration tests cover:
 
 ## Environment Variables
 
-[See Environment Variables Documentation](./env.md)
+[See Environment Variables Documentation](./configuration.md)
 
 ## Development & Testing
 

@@ -1,8 +1,25 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import z from "zod";
+import { resetConfig, validateConfig } from "../../src/lib/config";
 import { createRoute, type SpecItem } from "../../src/lib/helpers";
 
 describe("createRoute with spec validation", () => {
+	beforeEach(() => {
+		// Initialize config for createRoute to use
+		validateConfig({
+			server: {
+				routes: {
+					dir: "./test-routes",
+				}
+			}
+		});
+	});
+
+	afterEach(() => {
+		// Reset config state after each test
+		resetConfig();
+	});
+
 	test("should throw error when response status doesn't match spec", async () => {
 		const mockSpec: SpecItem = {
 			format: "json",

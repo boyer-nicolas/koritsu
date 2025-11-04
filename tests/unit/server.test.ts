@@ -43,6 +43,7 @@ describe("server.ts", () => {
 			server: {
 				routes: {
 					dir: routesDir,
+					basePath: "/",
 				},
 				port: 0,
 			},
@@ -63,7 +64,7 @@ describe("server.ts", () => {
 
 			const infoServer = new Api({
 				server: {
-					routes: { dir: routesDir },
+					routes: { dir: routesDir, basePath: "/" },
 					logLevel: "info",
 					port: 0,
 				},
@@ -109,22 +110,23 @@ describe("server.ts", () => {
 		});
 
 		test("should handle shutdown gracefully", () => {
-			const originalLog = console.log;
+			const originalInfo = console.info;
 			const originalExit = process.exit;
 
-			console.log = mock(() => {});
+			console.info = mock(() => {});
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			process.exit = mock(() => {}) as any;
 
 			Api.stop();
 
-			expect(console.log).toHaveBeenCalledWith(
-				"==> Shutting down gracefully...",
+			expect(console.info).toHaveBeenCalledWith(
+				"\x1b[32m[INFO]\x1b[0m",
+				"Shutting down gracefully...",
 			);
 			expect(process.exit).toHaveBeenCalled();
 
 			// Restore
-			console.log = originalLog;
+			console.info = originalInfo;
 			process.exit = originalExit;
 		});
 
@@ -159,23 +161,27 @@ describe("server.ts", () => {
 			};
 
 			const originalServe = Bun.serve;
-			const originalLog = console.log;
+			const originalInfo = console.info;
 
 			// biome-ignore lint/suspicious/noExplicitAny: needed for mocking
 			Bun.serve = mock(() => mockServer) as any;
-			console.log = mock(() => {});
+			console.info = mock(() => {});
 
 			await server.start();
 
 			expect(Bun.serve).toHaveBeenCalled();
-			expect(console.log).toHaveBeenCalledWith("==> Starting server...");
-			expect(console.log).toHaveBeenCalledWith(
-				"==> Server running at http://localhost:3000",
+			expect(console.info).toHaveBeenCalledWith(
+				"\x1b[32m[INFO]\x1b[0m",
+				"Starting server...",
+			);
+			expect(console.info).toHaveBeenCalledWith(
+				"\x1b[32m[INFO]\x1b[0m",
+				"Server running at http://localhost:3000",
 			);
 
 			// Restore
 			Bun.serve = originalServe;
-			console.log = originalLog;
+			console.info = originalInfo;
 		});
 
 		test("should set server static property when starting", async () => {

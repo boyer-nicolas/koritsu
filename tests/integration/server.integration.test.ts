@@ -19,7 +19,9 @@ describe("Server Integration Tests", () => {
 
 		server = await serverInstance.start();
 
-		baseURL = `http://${server.hostname}:${server.port}`;
+		// Extract hostname and port from the server URL
+		const serverUrl = new URL(server.url);
+		baseURL = `${serverUrl.protocol}//${serverUrl.host}`;
 
 		console.log(`Test server started at ${baseURL}`);
 	});

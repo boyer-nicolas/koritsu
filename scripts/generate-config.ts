@@ -1,10 +1,10 @@
 import fs from "node:fs/promises";
-import { getConfig } from "../src";
+import { ConfigSchema } from "../src";
 
 const envDocPath = "./configuration.md";
 
 export async function generateEnvDocumentation(): Promise<string> {
-	const config = getConfig();
+	const config = ConfigSchema.parse({});
 	const lines: string[] = [];
 
 	lines.push("# Configuration Options");

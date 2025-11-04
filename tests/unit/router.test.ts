@@ -2,19 +2,21 @@ import { beforeEach, describe, expect, mock, test } from "bun:test";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { validateConfig } from "../../src/lib/config";
 import { FileRouter } from "../../src/lib/router";
 
 describe("router.ts", () => {
 	let router: FileRouter;
 
 	beforeEach(() => {
-		router = new FileRouter({
+		const config = validateConfig({
 			server: {
 				routes: {
 					dir: "./dev/routes",
 				}
 			}
 		});
+		router = new FileRouter(config);
 	});
 
 	describe("FileRouter constructor", () => {
@@ -23,13 +25,14 @@ describe("router.ts", () => {
 		});
 
 		test("should initialize with custom routes path", () => {
-			const customRouter = new FileRouter({
+			const config = validateConfig({
 				server: {
 					routes: {
 						dir: "./custom/routes",
 					}
 				},
 			});
+			const customRouter = new FileRouter(config);
 			expect(customRouter).toBeInstanceOf(FileRouter);
 		});
 	});
@@ -563,13 +566,14 @@ describe("router.ts", () => {
 		test("should return a map of all discovered routes", async () => {
 			// Create a temporary directory structure for testing
 			const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "router-test-"));
-			const router = new FileRouter({
+			const config = validateConfig({
 				server: {
 					routes: {
 						dir: tempDir,
 					}
 				},
 			});
+			const router = new FileRouter(config);
 
 			const routes = router.getRoutes();
 			expect(routes).toBeInstanceOf(Map);
@@ -583,13 +587,14 @@ describe("router.ts", () => {
 		test("should handle spec modules with various export formats", async () => {
 			// Create a temporary directory structure for testing
 			const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "router-test-"));
-			const router = new FileRouter({
+			const config = validateConfig({
 				server: {
 					routes: {
 						dir: tempDir
 					},
 				},
 			});
+			const router = new FileRouter(config);
 
 			// Test by trying to load routes which will exercise getSpecData internally
 			await router.discoverRoutes();
