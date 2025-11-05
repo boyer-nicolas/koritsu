@@ -45,7 +45,7 @@
     "lint:fix": "biome check --write .",
     "lint": "biome check",
     "prepare": "husky",
-    "check": "tsc --noEmit",
+    "check": "tsc --project tsconfig.json",
     "test": "bun run --workspaces test",
     "generate:config": "bun run ./scripts/generate-config.ts",
     "publish:local": "bun run ./scripts/publish.ts",
