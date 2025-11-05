@@ -1,7 +1,7 @@
 {
-  "name": "ombrage-basic-example",
+  "name": "ombrage-auth-example",
   "version": "1.0.0",
-  "description": "Example API using ombrage-bun-api library",
+  "description": "Example API using ombrage-bun-api library with authentication",
   "type": "module",
   "packageManager": "bun@1.3.1",
   "private": true,
