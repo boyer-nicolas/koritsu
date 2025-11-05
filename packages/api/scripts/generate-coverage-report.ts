@@ -7,7 +7,7 @@ import { join } from "node:path";
  * Generates a simple HTML coverage report index
  */
 export function generateCoverageIndex() {
-	const coverageDir = join(process.cwd(), "packages/api", "coverage");
+	const coverageDir = join(process.cwd(), "coverage");
 	const indexPath = join(coverageDir, "index.html");
 
 	if (!existsSync(coverageDir)) {
