@@ -1,7 +1,14 @@
 import { Api, type OmbrageServer } from "./lib/api";
-import { type Config, ConfigSchema, getConfig } from "./lib/config";
+import {
+	type Config,
+	ConfigSchema,
+	getConfig,
+	type ProxyCallback,
+	type ProxyConfig,
+} from "./lib/config";
 import {
 	type CreateRouteProps,
+	createProxyConfig,
 	createRoute,
 	createRouteCollection,
 	createTypedResponse,
@@ -19,8 +26,11 @@ export {
 	type CreateRouteProps,
 	type RouteDefinition,
 	type OmbrageServer,
+	type ProxyCallback,
+	type ProxyConfig,
 	createTypedResponse,
 	createRoute,
 	createRouteCollection,
+	createProxyConfig,
 	FileRouter,
 };

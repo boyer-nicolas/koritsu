@@ -1,7 +1,250 @@
 import type { OpenAPIV3_1 } from "openapi-types";
 import { z } from "zod";
+import type { Config, ProxyCallback, ProxyConfig } from "./config";
 import { getConfig } from "./config";
 import { getLogger } from "./logger";
+
+// Proxy-related types and interfaces
+export interface ProxyMatchResult {
+	matched: boolean;
+	params: Record<string, string>;
+	config: ProxyConfig;
+}
+
+export interface ProxyExecutionContext {
+	request: Request;
+	params: Record<string, string>;
+	config: ProxyConfig;
+	startTime: number;
+}
+
+/**
+ * Matches a request path against a wildcard pattern and extracts parameters
+ * Supports patterns like:
+ * - "/api/*" (matches /api/users, /api/posts, etc.)
+ * - "/auth/star/protected" (matches /auth/user123/protected, /auth/admin/protected, etc.)
+ * - "/users/star/posts/star" (matches /users/123/posts/456, etc.)
+ * Note: star represents * wildcard in documentation
+ */
+export function matchProxyPattern(
+	requestPath: string,
+	pattern: string,
+): { matched: boolean; params: Record<string, string> } {
+	// Convert wildcard pattern to regex
+	// Replace * with named capture groups and escape special regex characters
+	const paramNames: string[] = [];
+	let paramIndex = 0;
+
+	// Escape special regex characters except *
+	const escapedPattern = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+
+	// Replace * with named capture groups
+	const regexPattern = escapedPattern.replace(/\*/g, () => {
+		const paramName = `param${paramIndex++}`;
+		paramNames.push(paramName);
+		return "([^/]+)";
+	});
+
+	// Create regex for exact match
+	const regex = new RegExp(`^${regexPattern}$`);
+	const match = requestPath.match(regex);
+
+	if (!match) {
+		return { matched: false, params: {} };
+	}
+
+	// Extract parameters
+	const params: Record<string, string> = {};
+	paramNames.forEach((name, index) => {
+		params[name] = match[index + 1] || "";
+	});
+
+	return { matched: true, params };
+}
+
+/**
+ * Finds the best matching proxy configuration for a request path
+ */
+export function findMatchingProxyConfig(
+	requestPath: string,
+	proxyConfigs: ProxyConfig[],
+): ProxyMatchResult | null {
+	// Filter enabled configs and sort by pattern specificity (more specific patterns first)
+	const enabledConfigs = proxyConfigs
+		.filter((config) => config.enabled)
+		.sort((a, b) => {
+			// Patterns with fewer wildcards are more specific
+			const aWildcards = (a.pattern.match(/\*/g) || []).length;
+			const bWildcards = (b.pattern.match(/\*/g) || []).length;
+			if (aWildcards !== bWildcards) {
+				return aWildcards - bWildcards;
+			}
+			// If same wildcard count, longer patterns are more specific
+			return b.pattern.length - a.pattern.length;
+		});
+
+	for (const config of enabledConfigs) {
+		const matchResult = matchProxyPattern(requestPath, config.pattern);
+		if (matchResult.matched) {
+			return {
+				matched: true,
+				params: matchResult.params,
+				config,
+			};
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Executes a proxy request with optional callback for authentication/authorization
+ */
+export async function executeProxyRequest(
+	context: ProxyExecutionContext,
+): Promise<Response> {
+	const { request, params, config } = context;
+	const logger = getLogger();
+
+	try {
+		// Execute callback if provided (for auth, logging, etc.)
+		if (config.callback) {
+			const callbackResult = await config.callback({
+				request,
+				params,
+				target: config.target,
+			});
+
+			// If callback says not to proceed, return the callback response
+			if (!callbackResult.proceed) {
+				return (
+					callbackResult.response ||
+					new Response("Proxy request blocked", { status: 403 })
+				);
+			}
+
+			// Update target and headers if callback provided them
+			if (callbackResult.target) {
+				config.target = callbackResult.target;
+			}
+			if (callbackResult.headers) {
+				config.headers = { ...config.headers, ...callbackResult.headers };
+			}
+		}
+
+		// Build target URL
+		const url = new URL(request.url);
+		const targetUrl = new URL(config.target);
+
+		// Preserve the original path and query parameters
+		targetUrl.pathname = url.pathname;
+		targetUrl.search = url.search;
+
+		// Prepare headers
+		const headers = new Headers();
+
+		// Copy original request headers (excluding host)
+		request.headers.forEach((value, key) => {
+			if (key.toLowerCase() !== "host") {
+				headers.set(key, value);
+			}
+		});
+
+		// Add configured headers
+		if (config.headers) {
+			Object.entries(config.headers).forEach(([key, value]) => {
+				headers.set(key, value);
+			});
+		}
+
+		// Set appropriate host header for target
+		headers.set("Host", targetUrl.host);
+
+		// Prepare request options
+		const requestOptions: RequestInit = {
+			method: request.method,
+			headers,
+			signal: AbortSignal.timeout(config.timeout),
+		};
+
+		// Include body for methods that support it
+		if (["POST", "PUT", "PATCH"].includes(request.method.toUpperCase())) {
+			requestOptions.body = request.body;
+		}
+
+		// Execute proxy request with retries
+		let lastError: Error | null = null;
+		for (let attempt = 0; attempt <= config.retries; attempt++) {
+			try {
+				const response = await fetch(targetUrl.toString(), requestOptions);
+
+				// Log successful proxy
+				logger.info(
+					`Proxied ${request.method} ${url.pathname} -> ${targetUrl} (${response.status}) [attempt ${attempt + 1}]`,
+				);
+
+				return response;
+			} catch (error) {
+				lastError = error as Error;
+
+				if (attempt < config.retries) {
+					logger.warn(
+						`Proxy attempt ${attempt + 1} failed, retrying: ${lastError.message}`,
+					);
+					// Simple exponential backoff
+					await new Promise((resolve) =>
+						setTimeout(resolve, 2 ** attempt * 1000),
+					);
+				}
+			}
+		}
+
+		// All attempts failed
+		logger.error(
+			`Proxy failed after ${config.retries + 1} attempts: ${lastError?.message}`,
+		);
+
+		return new Response("Proxy request failed", {
+			status: 502,
+			statusText: "Bad Gateway",
+		});
+	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		logger.error(`Proxy execution error: ${errorMessage}`);
+
+		return new Response("Proxy error", {
+			status: 500,
+			statusText: "Internal Server Error",
+		});
+	}
+}
+
+/**
+ * Utility function to create proxy configurations programmatically
+ */
+export function createProxyConfig(
+	pattern: string,
+	target: string,
+	options: {
+		callback?: ProxyCallback;
+		enabled?: boolean;
+		description?: string;
+		headers?: Record<string, string>;
+		timeout?: number;
+		retries?: number;
+	} = {},
+): ProxyConfig {
+	return {
+		pattern,
+		target,
+		enabled: options.enabled ?? true,
+		description: options.description,
+		headers: options.headers,
+		timeout: options.timeout ?? 10000,
+		retries: options.retries ?? 0,
+		callback: options.callback,
+	};
+}
 
 // Type helpers for extracting types from Zod schemas
 type InferZodType<T> = T extends z.ZodType<infer U> ? U : never;

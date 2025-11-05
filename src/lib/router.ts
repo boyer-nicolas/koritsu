@@ -2,10 +2,13 @@ import fs from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import type { OpenAPIV3_1 } from "openapi-types";
 import packageJson from "../../package.json";
-import type { Config } from "./config";
+import type { Config, ProxyConfig } from "./config";
 import {
 	type CustomSpec,
+	executeProxyRequest,
+	findMatchingProxyConfig,
 	generateOpenAPIFromCustomSpec,
+	type ProxyExecutionContext,
 	type SpecItem,
 } from "./helpers";
 import { getLogger, type Logger } from "./logger";
@@ -194,6 +197,38 @@ export class FileRouter {
 			logger.error(`Error serving static file: ${errorMessage}`);
 			return new Response(`Error: ${errorMessage}`, { status: 500 });
 		}
+	}
+
+	/**
+	 * Handle proxy requests based on configured patterns
+	 */
+	async handleProxyRequest(request: Request): Promise<Response | null> {
+		if (!this.config.proxy?.enabled || !this.config.proxy.configs.length) {
+			return null;
+		}
+
+		const url = new URL(request.url);
+		const path = url.pathname;
+
+		// Find matching proxy configuration
+		const proxyMatch = findMatchingProxyConfig(path, this.config.proxy.configs);
+		if (!proxyMatch) {
+			return null;
+		}
+
+		this.logger.debug(
+			`Proxy match found for ${path}: pattern "${proxyMatch.config.pattern}" -> ${proxyMatch.config.target}`,
+		);
+
+		// Execute proxy request
+		const context: ProxyExecutionContext = {
+			request,
+			params: proxyMatch.params,
+			config: proxyMatch.config,
+			startTime: Date.now(),
+		};
+
+		return await executeProxyRequest(context);
 	}
 
 	/**

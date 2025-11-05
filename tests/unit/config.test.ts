@@ -29,6 +29,10 @@ describe("config.ts", () => {
 						dir: "./public",
 					},
 				},
+				proxy: {
+					enabled: false,
+					configs: [],
+				},
 				swagger: {
 					enabled: true,
 					path: "/docs",
@@ -65,6 +69,10 @@ describe("config.ts", () => {
 							basePath: "/static",
 							dir: "./static",
 						},
+					},
+					proxy: {
+						enabled: false,
+						configs: [],
 					},
 					swagger: {
 						enabled: true,
@@ -130,6 +138,10 @@ describe("config.ts", () => {
 						basePath: "/static",
 						dir: "./static",
 					},
+				},
+				proxy: {
+					enabled: false,
+					configs: [],
 				},
 				swagger: {
 					enabled: true,

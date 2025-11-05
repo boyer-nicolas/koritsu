@@ -25,6 +25,17 @@ export class Api {
 		this.logger.debug(this.config, "Configuration");
 		this.logger.debug(this.fileRouter.getRouteInfo(), "Discovered routes:");
 
+		// Log proxy configurations if enabled
+		if (this.config.proxy?.enabled && this.config.proxy.configs.length > 0) {
+			const proxyInfo = this.config.proxy.configs
+				.filter((config) => config.enabled)
+				.map(
+					(config) =>
+						`${config.pattern} -> ${config.target}${config.description ? ` (${config.description})` : ""}`,
+				);
+			this.logger.debug(proxyInfo, "Enabled proxy configurations:");
+		}
+
 		const self = this;
 		return {
 			port: this.config.server.port,
@@ -44,6 +55,16 @@ export class Api {
 				if (url.pathname === "/favicon.ico") {
 					// Bypass logging for favicon requests
 					return new Response(null, { status: 204 });
+				}
+
+				// Handle proxy requests first (before static files and routes)
+				if (self.config.proxy?.enabled) {
+					const proxyResponse =
+						await self.fileRouter.handleProxyRequest(request);
+					if (proxyResponse) {
+						self.logger.http(request, proxyResponse, Date.now() - startTime);
+						return proxyResponse;
+					}
 				}
 
 				// Handle static file requests

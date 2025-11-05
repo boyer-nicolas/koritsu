@@ -3,7 +3,7 @@
 [![CI](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml)
 [![NPM Version](https://img.shields.io/npm/v/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
 [![NPM Downloads](https://img.shields.io/npm/dm/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
-[![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen)](./coverage/)
+[![Coverage](https://img.shields.io/badge/coverage-91%25-brightgreen)](./coverage/)
 
 A powerful file-based routing system built with Bun, featuring automatic API documentation generation with Swagger UI.
 

@@ -28,6 +28,49 @@ const numberFromString = z.union([z.number(), z.string()]).transform((val) => {
 	return Number(val);
 });
 
+// Define proxy callback function type
+export type ProxyCallback = (props: {
+	request: Request;
+	params: Record<string, string>;
+	target: string;
+}) => Promise<{
+	proceed: boolean;
+	response?: Response;
+	headers?: Record<string, string>;
+	target?: string;
+}>;
+
+// Proxy configuration schema
+const ProxyConfigSchema = z.object({
+	pattern: z
+		.string()
+		.describe(
+			"Wildcard pattern to match routes (e.g., '/api/*', '/auth/*/protected')",
+		),
+	target: z.string().url().describe("Target URL to proxy requests to"),
+	enabled: booleanFromString.default(true),
+	description: z
+		.string()
+		.optional()
+		.describe("Optional description of what this proxy does"),
+	headers: z
+		.record(z.string(), z.string())
+		.optional()
+		.describe("Additional headers to add to proxied requests"),
+	timeout: numberFromString
+		.pipe(z.number().min(1000).max(60000))
+		.default(10000)
+		.describe("Request timeout in milliseconds"),
+	retries: numberFromString
+		.pipe(z.number().min(0).max(5))
+		.default(0)
+		.describe("Number of retry attempts on failure"),
+});
+
+export type ProxyConfig = z.infer<typeof ProxyConfigSchema> & {
+	callback?: ProxyCallback;
+};
+
 export const ConfigSchema = z.object({
 	server: z
 		.object({
@@ -68,6 +111,12 @@ export const ConfigSchema = z.object({
 			routes: { dir: "./routes", basePath: "/" },
 			static: { dir: "./static", enabled: false, basePath: "/static" },
 		}),
+	proxy: z
+		.object({
+			enabled: booleanFromString.default(false),
+			configs: z.array(ProxyConfigSchema).default([]),
+		})
+		.default({ enabled: false, configs: [] }),
 	swagger: z
 		.object({
 			enabled: booleanFromString.default(true),
@@ -86,21 +135,63 @@ export const ConfigSchema = z.object({
 		.default("development"),
 });
 
-export type Config = z.infer<typeof ConfigSchema>;
+export type Config = z.infer<typeof ConfigSchema> & {
+	proxy?: {
+		enabled: boolean;
+		configs: ProxyConfig[];
+	};
+};
 
 // Input type for partial configuration
-export type ConfigInput = z.input<typeof ConfigSchema>;
+export type ConfigInput = z.input<typeof ConfigSchema> & {
+	proxy?: {
+		enabled?: boolean;
+		configs?: ProxyConfig[];
+	};
+};
 
 export function validateConfig(config: unknown): Config {
-	const result = ConfigSchema.safeParse(config);
+	// Extract proxy configs with callbacks before validation
+	const configWithoutCallbacks = JSON.parse(JSON.stringify(config));
+	const proxyCallbacks: Map<number, ProxyCallback> = new Map();
+
+	if (configWithoutCallbacks.proxy?.configs) {
+		configWithoutCallbacks.proxy.configs =
+			configWithoutCallbacks.proxy.configs.map(
+				(proxyConfig: any, index: number) => {
+					// Check original config for callbacks since they won't survive JSON serialization
+					const originalConfig = (config as any)?.proxy?.configs?.[index];
+					if (originalConfig?.callback) {
+						proxyCallbacks.set(index, originalConfig.callback);
+					}
+					// Remove callback for Zod validation (it won't be in the serialized copy anyway)
+					const { callback, ...configWithoutCallback } =
+						originalConfig || proxyConfig;
+					return configWithoutCallback;
+				},
+			);
+	}
+
+	const result = ConfigSchema.safeParse(configWithoutCallbacks);
 	if (!result.success) {
 		console.error("Configuration validation error:", result.error);
 		console.error("Provided configuration:", config);
 		throw new Error("Invalid configuration");
 	}
 
-	configInstance = result.data;
-	return result.data;
+	// Re-add callbacks to the validated config
+	const validatedConfig = result.data as Config;
+	if (validatedConfig.proxy?.configs && proxyCallbacks.size > 0) {
+		validatedConfig.proxy.configs = validatedConfig.proxy.configs.map(
+			(proxyConfig, index) => {
+				const callback = proxyCallbacks.get(index);
+				return callback ? { ...proxyConfig, callback } : proxyConfig;
+			},
+		);
+	}
+
+	configInstance = validatedConfig;
+	return validatedConfig;
 }
 
 export function getConfig(): Config {
