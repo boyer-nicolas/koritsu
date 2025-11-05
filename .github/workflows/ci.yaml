@@ -28,26 +28,21 @@ jobs:
         run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Run checks
-        run: |
-          echo "🔍 Running type checks..."
-          bun run check
+        run: bun run check
 
-          echo "🧹 Running linter..."
-          bun run lint
+      - name: Run linter
+        run: bun run lint
+      - name: Run tests
+        run: bun run test
 
-          echo "🧪 Running tests..."
-          bun run test
+      - name: Run tests with coverage
+        run: bun run --filter ombrage-bun-api test:coverage
 
-          echo "🧪 Running tests with coverage..."
-          bun run --filter ombrage-bun-api test:coverage
+      - name: Build package
+        run: bun run --filter ombrage-bun-api build
 
-          echo "🏗️ Building package..."
-          bun run --filter ombrage-bun-api build
-
-          echo "📚 Building documentation site..."
-          bun run docs:build
-
-          echo "✅ All checks passed successfully!"
+      - name: Build documentation site
+        run: bun run docs:build
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v5
