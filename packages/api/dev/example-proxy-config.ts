@@ -1,7 +1,7 @@
 import { Api, createProxyConfig, type ProxyCallback } from "../src";
 
 // Example authentication callback for protected routes
-const authCallback: ProxyCallback = async ({ request, params, target }) => {
+const authCallback: ProxyCallback = async ({ request }) => {
 	const authHeader = request.headers.get("authorization");
 
 	// Simple JWT token validation example
@@ -94,7 +94,7 @@ export const exampleProxyConfig = new Api({
 				"https://user-service.example.com",
 				{
 					description: "User profile service",
-					callback: async ({ request, params, target }) => {
+					callback: async ({ params }) => {
 						// params.param0 contains the user ID from the wildcard
 						const userId = params.param0;
 
@@ -128,7 +128,7 @@ export const exampleProxyConfig = new Api({
 				"https://multi-tenant-service.example.com",
 				{
 					description: "Multi-tenant service routing",
-					callback: async ({ request, params, target }) => {
+					callback: async ({ params, target }) => {
 						const tenantId = params.param0;
 						const serviceId = params.param1;
 

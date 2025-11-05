@@ -5,7 +5,6 @@
  * Runs tests, generates coverage reports, and updates badges
  */
 
-import { $ } from "bun";
 import { generateBadge } from "./generate-coverage-badge";
 import { generateCoverageIndex } from "./generate-coverage-report";
 

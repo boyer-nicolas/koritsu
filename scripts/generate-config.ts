@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import { ConfigSchema } from "../src";
+import { ConfigSchema } from "../packages/api/src";
 
 const envDocPath = "./docs/configuration.md";
 

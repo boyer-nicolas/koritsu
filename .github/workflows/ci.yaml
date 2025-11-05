@@ -35,17 +35,14 @@ jobs:
           echo "🧹 Running linter..."
           bun run lint
 
+          echo "🧪 Running tests..."
+          bun run test
+
           echo "🧪 Running tests with coverage..."
-          bun run test:coverage
+          bun run --filter ombrage-bun-api test:coverage
 
           echo "🏗️ Building package..."
-          bun run build
-
-          echo "🧪 Running tests for the example app..."
-          cd examples/basic
-          bun install --frozen-lockfile --ignore-scripts
-          bun test
-          cd ../..
+          bun run --filter ombrage-bun-api build
 
           echo "📚 Building documentation site..."
           bun run docs:build

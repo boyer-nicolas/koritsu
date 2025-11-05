@@ -2,8 +2,10 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Api, createProxyConfig, type ProxyCallback } from "../../src";
 
 describe("Proxy Integration Tests", () => {
+	// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 	let mockTargetServer: any;
 	let mockTargetPort: number;
+	// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 	let apiServer: any;
 	let apiPort: number;
 
@@ -27,7 +29,7 @@ describe("Proxy Integration Tests", () => {
 		mockTargetPort = mockTargetServer.port;
 
 		// Create API server with proxy configuration
-		const authCallback: ProxyCallback = async ({ request, params, target }) => {
+		const authCallback: ProxyCallback = async ({ request }) => {
 			const authHeader = request.headers.get("authorization");
 
 			if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -102,7 +104,7 @@ describe("Proxy Integration Tests", () => {
 						`http://localhost:${mockTargetPort}`,
 						{
 							description: "User profile endpoints",
-							callback: async ({ request, params, target }) => {
+							callback: async ({ params }) => {
 								const userId = params.param0;
 								return {
 									proceed: true,
@@ -135,6 +137,7 @@ describe("Proxy Integration Tests", () => {
 		const response = await fetch(`http://localhost:${apiPort}/api/public/test`);
 		expect(response.status).toBe(200);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.method).toBe("GET");
 		expect(data.path).toBe("/api/public/test");
@@ -146,6 +149,7 @@ describe("Proxy Integration Tests", () => {
 		);
 		expect(response.status).toBe(401);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.error).toBe("Unauthorized");
 		expect(data.message).toBe("Missing authorization header");
@@ -162,6 +166,7 @@ describe("Proxy Integration Tests", () => {
 		);
 		expect(response.status).toBe(403);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.error).toBe("Forbidden");
 		expect(data.message).toBe("Invalid token");
@@ -178,6 +183,7 @@ describe("Proxy Integration Tests", () => {
 		);
 		expect(response.status).toBe(200);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.method).toBe("GET");
 		expect(data.path).toBe("/api/protected/test");
@@ -190,6 +196,7 @@ describe("Proxy Integration Tests", () => {
 		);
 		expect(response.status).toBe(200);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.method).toBe("GET");
 		expect(data.path).toBe("/users/123/profile");
@@ -202,6 +209,7 @@ describe("Proxy Integration Tests", () => {
 		);
 		expect(response.status).toBe(200);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.method).toBe("GET");
 		expect(data.path).toBe("/api/public/search");
@@ -222,6 +230,7 @@ describe("Proxy Integration Tests", () => {
 		);
 		expect(response.status).toBe(200);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.method).toBe("POST");
 		expect(data.path).toBe("/api/public/create");
@@ -234,6 +243,7 @@ describe("Proxy Integration Tests", () => {
 		);
 		expect(response.status).toBe(404);
 
+		// biome-ignore lint/suspicious/noExplicitAny: This is a test file
 		const data = (await response.json()) as any;
 		expect(data.error).toBe("Not Found");
 	});
@@ -242,7 +252,7 @@ describe("Proxy Integration Tests", () => {
 		// Create a slow target server
 		const slowServer = Bun.serve({
 			port: 0,
-			async fetch(request) {
+			async fetch() {
 				// Delay longer than proxy timeout
 				await new Promise((resolve) => setTimeout(resolve, 10000));
 				return Response.json({ slow: true });

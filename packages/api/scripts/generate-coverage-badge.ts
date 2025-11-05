@@ -96,7 +96,8 @@ function updateReadmeBadge(
 
 export function generateBadge() {
 	const args = process.argv.slice(2);
-	const lcovPath = args[0] || join(process.cwd(), "coverage", "lcov.info");
+	const lcovPath =
+		args[0] || join(process.cwd(), "packages/api", "coverage", "lcov.info");
 	const readmePath = args[1] || join(process.cwd(), "README.md");
 
 	try {

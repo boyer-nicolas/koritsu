@@ -87,22 +87,22 @@ describe("Proxy Pattern Matching", () => {
 		test("should find the most specific matching pattern", () => {
 			const result = findMatchingProxyConfig("/api/auth/login", mockConfigs);
 			expect(result).not.toBeNull();
-			expect(result!.config.target).toBe("https://auth.example.com");
-			expect(result!.config.description).toBe("Auth-specific proxy");
+			expect(result?.config.target).toBe("https://auth.example.com");
+			expect(result?.config.description).toBe("Auth-specific proxy");
 		});
 
 		test("should fall back to less specific patterns when more specific don't match", () => {
 			const result = findMatchingProxyConfig("/api/users", mockConfigs);
 			expect(result).not.toBeNull();
-			expect(result!.config.target).toBe("https://api.example.com");
-			expect(result!.config.description).toBe("General API proxy");
+			expect(result?.config.target).toBe("https://api.example.com");
+			expect(result?.config.description).toBe("General API proxy");
 		});
 
 		test("should extract parameters correctly", () => {
 			const result = findMatchingProxyConfig("/users/123/profile", mockConfigs);
 			expect(result).not.toBeNull();
-			expect(result!.params.param0).toBe("123");
-			expect(result!.config.target).toBe("https://users.example.com");
+			expect(result?.params.param0).toBe("123");
+			expect(result?.config.target).toBe("https://users.example.com");
 		});
 
 		test("should return null when no patterns match", () => {
@@ -129,15 +129,15 @@ describe("Proxy Pattern Matching", () => {
 
 			// Most specific (no wildcards) should win
 			const result1 = findMatchingProxyConfig("/api/v1/users", configs);
-			expect(result1!.config.target).toBe("https://exact.example.com");
+			expect(result1?.config.target).toBe("https://exact.example.com");
 
 			// Medium specific (one wildcard) should win over general
 			const result2 = findMatchingProxyConfig("/api/v2/users", configs);
-			expect(result2!.config.target).toBe("https://specific.example.com");
+			expect(result2?.config.target).toBe("https://specific.example.com");
 
 			// General pattern when others don't match
 			const result3 = findMatchingProxyConfig("/api/posts", configs);
-			expect(result3!.config.target).toBe("https://general.example.com");
+			expect(result3?.config.target).toBe("https://general.example.com");
 		});
 	});
 

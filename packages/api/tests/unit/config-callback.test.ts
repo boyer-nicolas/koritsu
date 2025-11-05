@@ -3,7 +3,7 @@ import { Api, createProxyConfig, type ProxyCallback } from "../../src";
 
 describe("Proxy Config Callback Preservation", () => {
 	test("should preserve callbacks during config validation", () => {
-		const testCallback: ProxyCallback = async ({ request, params, target }) => {
+		const testCallback: ProxyCallback = async () => {
 			return { proceed: false };
 		};
 

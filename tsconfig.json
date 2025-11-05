@@ -29,6 +29,6 @@
     "noPropertyAccessFromIndexSignature": false,
     "rootDir": "."
   },
-  "include": ["src", "dev", "tests", "scripts"],
+  "include": ["packages"],
   "exclude": ["node_modules", "dist"]
 }

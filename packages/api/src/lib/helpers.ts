@@ -1,6 +1,6 @@
 import type { OpenAPIV3_1 } from "openapi-types";
 import { z } from "zod";
-import type { Config, ProxyCallback, ProxyConfig } from "./config";
+import type { ProxyCallback, ProxyConfig } from "./config";
 import { getConfig } from "./config";
 import { getLogger } from "./logger";
 

@@ -158,13 +158,16 @@ export function validateConfig(config: unknown): Config {
 	if (configWithoutCallbacks.proxy?.configs) {
 		configWithoutCallbacks.proxy.configs =
 			configWithoutCallbacks.proxy.configs.map(
+				// biome-ignore lint/suspicious/noExplicitAny: This is necessary to handle unknown config shapes
 				(proxyConfig: any, index: number) => {
 					// Check original config for callbacks since they won't survive JSON serialization
+					// biome-ignore lint/suspicious/noExplicitAny: This is necessary to handle unknown config shapes
 					const originalConfig = (config as any)?.proxy?.configs?.[index];
 					if (originalConfig?.callback) {
 						proxyCallbacks.set(index, originalConfig.callback);
 					}
 					// Remove callback for Zod validation (it won't be in the serialized copy anyway)
+					// biome-ignore lint/correctness/noUnusedVariables: This is to exclude callback from the returned object
 					const { callback, ...configWithoutCallback } =
 						originalConfig || proxyConfig;
 					return configWithoutCallback;

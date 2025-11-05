@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import type { OpenAPIV3_1 } from "openapi-types";
 import packageJson from "../../package.json";
-import type { Config, ProxyConfig } from "./config";
+import type { Config } from "./config";
 import {
 	type CustomSpec,
 	executeProxyRequest,
