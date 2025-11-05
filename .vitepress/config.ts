@@ -125,7 +125,7 @@ export default defineConfig({
 			{ text: "Docs", link: "/getting-started/getting-started" },
 			{
 				text: "Examples",
-				link: "https://github.com/boyer-nicolas/ombrage-bun-api/tree/main/examples",
+				link: "https://github.com/boyer-nicolas/ombrage-bun-api/tree/main/packages/examples",
 			},
 		],
 		sidebar: buildSidebar(),
