@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.35
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.34...v0.0.35)
+
+### 🩹 Fixes
+
+- Coverage flow ([f33d0ec](https://github.com/boyer-nicolas/ombrage-bun-api/commit/f33d0ec))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.34
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.33...v0.0.34)
