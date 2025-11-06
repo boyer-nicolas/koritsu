@@ -23,6 +23,12 @@ features:
     details: Built with TypeScript and Zod for runtime validation, type safety, and excellent developer experience.
 ---
 
+<div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin: 2rem 0; flex-wrap: wrap;">
+  <img src="https://img.shields.io/npm/v/ombrage-bun-api?style=for-the-badge&logo=npm&logoColor=white&label=Latest&color=2563eb" alt="NPM Version">
+  <img src="https://img.shields.io/npm/dm/ombrage-bun-api?style=for-the-badge&logo=npm&color=2563eb" alt="NPM Downloads">
+  <img src="https://img.shields.io/github/license/boyer-nicolas/ombrage-bun-api?style=for-the-badge&color=2563eb" alt="License">
+</div>
+
 <br/>
 
 # Documentation
