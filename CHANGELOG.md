@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.1.4
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/0.1.3...v0.1.4)
+
+### 🩹 Fixes
+
+- Docs dead link ([1e91dfb](https://github.com/boyer-nicolas/koritsu/commit/1e91dfb))
+
+### 💅 Refactors
+
+- Renamed package ([aa69050](https://github.com/boyer-nicolas/koritsu/commit/aa69050))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.1.3
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/0.1.2...v0.1.3)
