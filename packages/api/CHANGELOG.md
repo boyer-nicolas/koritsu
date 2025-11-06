@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v0.0.42
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.41...v0.0.42)
+
+### 🩹 Fixes
+
+- Main package json ([d5d0015](https://github.com/boyer-nicolas/ombrage-bun-api/commit/d5d0015))
+- Lockfile ([8cf13e6](https://github.com/boyer-nicolas/ombrage-bun-api/commit/8cf13e6))
+- Release flow ([49e95bf](https://github.com/boyer-nicolas/ombrage-bun-api/commit/49e95bf))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.41
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.40...v0.0.41)
