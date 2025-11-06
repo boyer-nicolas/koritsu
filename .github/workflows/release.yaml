@@ -154,25 +154,10 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.new_version }}
           name: Release ${{ steps.version.outputs.new_version }}
-          body: |
-            🚀 **Automated release created by GitHub Actions**
-
-            ## Changes
-            See the [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes.
-
-            ## Installation
-            ```bash
-            bun install ombrage-bun-api@${{ steps.version.outputs.new_version }}
-            # or
-            npm install ombrage-bun-api@${{ steps.version.outputs.new_version }}
-            # or
-            yarn add ombrage-bun-api@${{ steps.version.outputs.new_version }}
-            # or
-            pnpm add ombrage-bun-api@${{ steps.version.outputs.new_version }}
-            ```
+          body_path: ./CHANGELOG.md
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
           files: |
             ./CHANGELOG.md
             packages/api/dist/index.d.ts
