@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v0.0.39
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.38...v0.0.39)
+
+### 🩹 Fixes
+
+- Readme ([46b7c93](https://github.com/boyer-nicolas/ombrage-bun-api/commit/46b7c93))
+- Removed dir option ([d3627f5](https://github.com/boyer-nicolas/ombrage-bun-api/commit/d3627f5))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.38
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.37...v0.0.38)
