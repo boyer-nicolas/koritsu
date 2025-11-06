@@ -28,11 +28,11 @@ const numberFromString = z.union([z.number(), z.string()]).transform((val) => {
 	return Number(val);
 });
 
-// Define proxy callback function type
-export type ProxyCallback = (props: {
+// Define proxy handler function type
+export type ProxyHandler = (props: {
 	request: Request;
 	params: Record<string, string>;
-	target: string;
+	target?: string;
 }) => Promise<{
 	proceed: boolean;
 	response?: Response;
@@ -47,8 +47,8 @@ const ProxyConfigSchema = z.object({
 		.describe(
 			"Wildcard pattern to match routes (e.g., '/api/*', '/auth/*/protected')",
 		),
-	target: z.string().url().describe("Target URL to proxy requests to"),
-	enabled: booleanFromString.default(true),
+	target: z.url().optional().describe("Target URL to proxy requests to"),
+	enabled: z.boolean().default(true),
 	description: z
 		.string()
 		.optional()
@@ -60,15 +60,17 @@ const ProxyConfigSchema = z.object({
 	timeout: numberFromString
 		.pipe(z.number().min(1000).max(60000))
 		.default(10000)
+		.optional()
 		.describe("Request timeout in milliseconds"),
 	retries: numberFromString
 		.pipe(z.number().min(0).max(5))
 		.default(0)
+		.optional()
 		.describe("Number of retry attempts on failure"),
 });
 
 export type ProxyConfig = z.infer<typeof ProxyConfigSchema> & {
-	callback?: ProxyCallback;
+	handler?: ProxyHandler;
 };
 
 export const ConfigSchema = z.object({
@@ -146,49 +148,49 @@ export type Config = z.infer<typeof ConfigSchema> & {
 export type ConfigInput = z.input<typeof ConfigSchema> & {
 	proxy?: {
 		enabled?: boolean;
-		configs?: ProxyConfig[];
+		configs?: Partial<ProxyConfig>[];
 	};
 };
 
 export function validateConfig(config: unknown): Config {
-	// Extract proxy configs with callbacks before validation
-	const configWithoutCallbacks = JSON.parse(JSON.stringify(config));
-	const proxyCallbacks: Map<number, ProxyCallback> = new Map();
+	// Extract proxy configs with handlers before validation
+	const configWithoutHandlers = JSON.parse(JSON.stringify(config));
+	const proxyHandlers: Map<number, ProxyHandler> = new Map();
 
-	if (configWithoutCallbacks.proxy?.configs) {
-		configWithoutCallbacks.proxy.configs =
-			configWithoutCallbacks.proxy.configs.map(
+	if (configWithoutHandlers.proxy?.configs) {
+		configWithoutHandlers.proxy.configs =
+			configWithoutHandlers.proxy.configs.map(
 				// biome-ignore lint/suspicious/noExplicitAny: This is necessary to handle unknown config shapes
 				(proxyConfig: any, index: number) => {
-					// Check original config for callbacks since they won't survive JSON serialization
+					// Check original config for handlers since they won't survive JSON serialization
 					// biome-ignore lint/suspicious/noExplicitAny: This is necessary to handle unknown config shapes
 					const originalConfig = (config as any)?.proxy?.configs?.[index];
-					if (originalConfig?.callback) {
-						proxyCallbacks.set(index, originalConfig.callback);
+					if (originalConfig?.handler) {
+						proxyHandlers.set(index, originalConfig.handler);
 					}
-					// Remove callback for Zod validation (it won't be in the serialized copy anyway)
-					// biome-ignore lint/correctness/noUnusedVariables: This is to exclude callback from the returned object
-					const { callback, ...configWithoutCallback } =
+					// Remove handler for Zod validation (it won't be in the serialized copy anyway)
+					// biome-ignore lint/correctness/noUnusedVariables: This is to exclude handler from the returned object
+					const { handler, ...configWithoutHandler } =
 						originalConfig || proxyConfig;
-					return configWithoutCallback;
+					return configWithoutHandler;
 				},
 			);
 	}
 
-	const result = ConfigSchema.safeParse(configWithoutCallbacks);
+	const result = ConfigSchema.safeParse(configWithoutHandlers);
 	if (!result.success) {
 		console.error("Configuration validation error:", result.error);
 		console.error("Provided configuration:", config);
 		throw new Error("Invalid configuration");
 	}
 
-	// Re-add callbacks to the validated config
+	// Re-add handlers to the validated config
 	const validatedConfig = result.data as Config;
-	if (validatedConfig.proxy?.configs && proxyCallbacks.size > 0) {
+	if (validatedConfig.proxy?.configs && proxyHandlers.size > 0) {
 		validatedConfig.proxy.configs = validatedConfig.proxy.configs.map(
 			(proxyConfig, index) => {
-				const callback = proxyCallbacks.get(index);
-				return callback ? { ...proxyConfig, callback } : proxyConfig;
+				const handler = proxyHandlers.get(index);
+				return handler ? { ...proxyConfig, handler } : proxyConfig;
 			},
 		);
 	}

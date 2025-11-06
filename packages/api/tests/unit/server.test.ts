@@ -25,7 +25,7 @@ describe("server.ts", () => {
 			import { z } from "zod";
 			export const GET = createRoute({
 				method: "GET",
-				callback: async () => Response.json({ message: "test" }),
+				handler: async () => Response.json({ message: "test" }),
 				spec: {
 					summary: "Test route",
 					responses: {

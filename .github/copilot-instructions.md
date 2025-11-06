@@ -24,7 +24,7 @@ Always use `createRoute()` from `src/lib/helpers.ts`:
 ```typescript
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ params, query, body, headers }) => {
+  handler: async ({ params, query, body, headers }) => {
     // Route logic here
     return Response.json(data);
   },
@@ -206,3 +206,8 @@ Automated on `main` branch push:
 - **Husky + lint-staged**: Pre-commit hooks for code quality
 - **Changelogen**: Conventional commit changelog generation
 - **GitHub Actions**: Fully automated CI/CD pipeline
+
+
+### Documentation
+- **docs/**: Markdown documentation files, handled by Vitepress
+- **README.md**: Main project overview and usage instructions

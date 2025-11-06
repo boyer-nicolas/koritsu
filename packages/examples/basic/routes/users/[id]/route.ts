@@ -4,7 +4,7 @@ import { z } from "zod";
 // Get user by ID
 export const GET = createRoute({
 	method: "GET",
-	callback: async ({ params }) => {
+	handler: async ({ params }) => {
 		const { id } = params;
 
 		// Mock user data
@@ -43,7 +43,7 @@ export const GET = createRoute({
 // Update user
 export const PUT = createRoute({
 	method: "PUT",
-	callback: async ({ params, body }) => {
+	handler: async ({ params, body }) => {
 		const { id } = params;
 		const { name, email } = body;
 

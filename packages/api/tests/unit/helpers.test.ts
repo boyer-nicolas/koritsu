@@ -27,26 +27,26 @@ describe("helpers.ts", () => {
 	});
 
 	describe("createRoute", () => {
-		test("should create a route object with method and callback", () => {
-			const mockCallback = async () => {
+		test("should create a route object with method and handler", () => {
+			const mockHandler = async () => {
 				return new Response("test");
 			};
 
 			const routeProps: CreateRouteProps = {
 				method: "GET",
-				callback: mockCallback,
+				handler: mockHandler,
 			};
 
 			const result = createRoute(routeProps);
 
 			expect(result).toEqual({
 				method: "GET",
-				callback: mockCallback,
+				handler: mockHandler,
 				spec: undefined,
 			});
 		});
 
-		test("should create a route object with only method when callback is undefined", () => {
+		test("should create a route object with only method when handler is undefined", () => {
 			const routeProps: CreateRouteProps = {
 				method: "POST",
 			};
@@ -55,7 +55,7 @@ describe("helpers.ts", () => {
 
 			expect(result).toEqual({
 				method: "POST",
-				callback: undefined,
+				handler: undefined,
 				spec: undefined,
 			});
 		});
@@ -649,7 +649,7 @@ describe("helpers.ts", () => {
 				// Call the internal validation function by creating a route with validation
 				createRoute({
 					method: "GET",
-					callback: async () => okResponse,
+					handler: async () => okResponse,
 					spec: spec,
 				});
 			}).not.toThrow();
@@ -674,7 +674,7 @@ describe("helpers.ts", () => {
 				// This will be caught by the validation logic
 				createRoute({
 					method: "GET",
-					callback: async () => new Response("Not Found", { status: 404 }),
+					handler: async () => new Response("Not Found", { status: 404 }),
 					spec: spec,
 				});
 			}).not.toThrow(); // The route creation doesn't throw, validation happens at runtime
@@ -702,7 +702,7 @@ describe("helpers.ts", () => {
 			expect(() => {
 				createRoute({
 					method: "GET",
-					callback: async () => jsonResponse,
+					handler: async () => jsonResponse,
 					spec: spec,
 				});
 			}).not.toThrow();
@@ -743,21 +743,21 @@ describe("helpers.ts", () => {
 			expect(mockProps.query).toEqual({ filter: "active" });
 		});
 
-		test("CreateRouteProps should include method and optional callback", () => {
+		test("CreateRouteProps should include method and optional handler", () => {
 			const mockProps: CreateRouteProps = {
 				method: "GET",
 			};
 
 			expect(mockProps.method).toBe("GET");
-			expect(mockProps.callback).toBeUndefined();
+			expect(mockProps.handler).toBeUndefined();
 
-			const mockPropsWithCallback: CreateRouteProps = {
+			const mockPropsWithHandler: CreateRouteProps = {
 				method: "POST",
-				callback: async () => new Response("test"),
+				handler: async () => new Response("test"),
 			};
 
-			expect(mockPropsWithCallback.method).toBe("POST");
-			expect(typeof mockPropsWithCallback.callback).toBe("function");
+			expect(mockPropsWithHandler.method).toBe("POST");
+			expect(typeof mockPropsWithHandler.handler).toBe("function");
 		});
 
 		test("SpecItem should support the new parameter format", () => {

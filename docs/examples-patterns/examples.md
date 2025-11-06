@@ -10,7 +10,7 @@ Here are some common patterns and examples for building APIs with Ombrage Bun AP
 // routes/users/route.ts
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ query }) => {
+  handler: async ({ query }) => {
     const { limit = 10, offset = 0 } = query;
     const users = await getUsersFromDatabase({ limit, offset });
     return Response.json(users);
@@ -38,7 +38,7 @@ export const GET = createRoute({
 // routes/users/[id]/route.ts
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ params }) => {
+  handler: async ({ params }) => {
     const user = await getUserById(params.id);
     if (!user) {
       return Response.json({ error: "User not found" }, { status: 404 });
@@ -66,7 +66,7 @@ export const GET = createRoute({
 // routes/users/route.ts
 export const POST = createRoute({
   method: "POST",
-  callback: async ({ body }) => {
+  handler: async ({ body }) => {
     const user = await createUser(body);
     return Response.json(user, { status: 201 });
   },
@@ -91,7 +91,7 @@ export const POST = createRoute({
 // routes/auth/login/route.ts
 export const POST = createRoute({
   method: "POST",
-  callback: async ({ body }) => {
+  handler: async ({ body }) => {
     const { email, password } = body;
     const user = await authenticateUser(email, password);
 
@@ -131,7 +131,7 @@ export const POST = createRoute({
 // routes/upload/route.ts
 export const POST = createRoute({
   method: "POST",
-  callback: async ({ request }) => {
+  handler: async ({ request }) => {
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -167,7 +167,7 @@ export const POST = createRoute({
 // routes/health/route.ts
 export const GET = createRoute({
   method: "GET",
-  callback: async () => {
+  handler: async () => {
     const health = {
       status: "healthy",
       timestamp: new Date().toISOString(),

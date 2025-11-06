@@ -22,7 +22,7 @@ Use Zod schemas to define route parameters in your route specs. Ombrage API supp
 ```typescript
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ params, query, request }) => {
+  handler: async ({ params, query, request }) => {
     // Path parameters
     const { id } = params; // From /users/[id]
 
@@ -78,7 +78,7 @@ export const GET = createRoute({
 // Example with POST request and body validation
 export const POST = createRoute({
   method: "POST",
-  callback: async ({ body }) => {
+  handler: async ({ body }) => {
     // Body is automatically validated and typed
     const { name, email, age } = body;
 
@@ -137,7 +137,7 @@ Parameters are automatically parsed and provided to your route handlers:
 ```typescript
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ params, query, headers, request }) => {
+  handler: async ({ params, query, headers, request }) => {
     // Path parameters
     const { id } = params; // From /users/[id]
 
@@ -162,7 +162,7 @@ export const GET = createRoute({
 
 export const POST = createRoute({
   method: "POST",
-  callback: async ({ body, headers, request }) => {
+  handler: async ({ body, headers, request }) => {
     // Request body (automatically parsed and validated)
     const { name, email, preferences } = body;
 
@@ -179,7 +179,7 @@ export const POST = createRoute({
 
 export const PUT = createRoute({
   method: "PUT",
-  callback: async ({ params, body, query, request }) => {
+  handler: async ({ params, body, query, request }) => {
     // All parameter types available together
     const { id } = params; // Path parameter
     const { userData } = body; // Request body
@@ -203,7 +203,7 @@ import { z } from "zod";
 
 export const POST = createRoute({
   method: "POST",
-  callback: async ({ body }) => {
+  handler: async ({ body }) => {
     // body is automatically parsed and validated
     const { name, email, profile } = body;
 
@@ -259,7 +259,7 @@ export const POST = createRoute({
 // Complex example with nested validation
 export const PUT = createRoute({
   method: "PUT",
-  callback: async ({ params, body }) => {
+  handler: async ({ params, body }) => {
     const { id } = params;
     const userData = body;
 
@@ -483,7 +483,7 @@ import { z } from "zod";
 
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ params, query }) => {
+  handler: async ({ params, query }) => {
     // All parameters are typed and validated
     const { id } = params; // string (required)
     const { include, limit } = query; // string[] | undefined, number

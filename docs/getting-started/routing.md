@@ -12,7 +12,7 @@ import { z } from "zod";
 
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ params, query, body, headers }) => {
+  handler: async ({ params, query, body, headers }) => {
     return Response.json({ message: "Hello World!" });
   },
   spec: {

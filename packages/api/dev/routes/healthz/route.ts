@@ -3,7 +3,7 @@ import { createRoute } from "../../../src";
 
 export const GET = createRoute({
 	method: "GET",
-	callback: async () => {
+	handler: async () => {
 		return new Response("OK");
 	},
 	spec: {

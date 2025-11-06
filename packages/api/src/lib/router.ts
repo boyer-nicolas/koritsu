@@ -266,9 +266,9 @@ export class FileRouter {
 		}
 
 		try {
-			// Extract the callback from the route object
+			// Extract the handler from the route object
 			const routeObject = handler as {
-				callback?: (props: {
+				handler?: (props: {
 					request: Request;
 					params?: Record<string, string>;
 					body?: unknown;
@@ -276,7 +276,7 @@ export class FileRouter {
 					headers?: Record<string, string>;
 				}) => Promise<Response>;
 			};
-			if (!routeObject.callback || typeof routeObject.callback !== "function") {
+			if (!routeObject.handler || typeof routeObject.handler !== "function") {
 				return Response.json(
 					{
 						error: "Method Not Allowed",
@@ -309,7 +309,7 @@ export class FileRouter {
 				}
 			}
 
-			return await routeObject.callback({
+			return await routeObject.handler({
 				request,
 				params: routeMatch.params,
 				body,

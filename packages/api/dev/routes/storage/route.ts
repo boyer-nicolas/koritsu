@@ -9,7 +9,7 @@ import {
 
 export const GET = createRoute({
 	method: "GET",
-	callback: async () => {
+	handler: async () => {
 		const buckets = listBuckets();
 		return Response.json(buckets);
 	},
@@ -28,7 +28,7 @@ export const GET = createRoute({
 
 export const POST = createRoute({
 	method: "POST",
-	callback: async ({ body }) => {
+	handler: async ({ body }) => {
 		const bucket = createBucket(body.name);
 		return Response.json(bucket, {
 			status: 201,

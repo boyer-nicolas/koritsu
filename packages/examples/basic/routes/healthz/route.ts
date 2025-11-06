@@ -4,7 +4,7 @@ import { z } from "zod";
 // Health check endpoint
 export const GET = createRoute({
 	method: "GET",
-	callback: async () => {
+	handler: async () => {
 		return new Response("OK");
 	},
 	spec: {
@@ -23,7 +23,7 @@ export const GET = createRoute({
 // Example POST endpoint with validation
 export const POST = createRoute({
 	method: "POST",
-	callback: async ({ body }) => {
+	handler: async ({ body }) => {
 		const { message } = body;
 
 		return Response.json({

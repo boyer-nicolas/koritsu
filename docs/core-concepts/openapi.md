@@ -9,7 +9,7 @@ Every route spec contributes to the generated OpenAPI schema:
 ```typescript
 export const GET = createRoute({
   method: "GET",
-  callback: async ({ params }) => {
+  handler: async ({ params }) => {
     // Route implementation
   },
   spec: {
@@ -98,7 +98,7 @@ Add the optional `tags` array to your route specification:
 ```typescript
 export const GET = createRoute({
   method: "GET",
-  callback: async () => {
+  handler: async () => {
     // Route logic here
     return Response.json({ message: "Success" });
   },

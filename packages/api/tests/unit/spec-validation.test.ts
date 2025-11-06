@@ -36,7 +36,7 @@ describe("createRoute with spec validation", () => {
 
 		const route = createRoute({
 			method: "POST",
-			callback: async () => {
+			handler: async () => {
 				// This returns 200 but spec expects 201
 				return Response.json({ success: true });
 			},
@@ -45,8 +45,8 @@ describe("createRoute with spec validation", () => {
 
 		const request = new Request("http://localhost/test", { method: "POST" });
 
-		// Test the callback directly as an async function
-		if (route.callback) {
+		// Test the handler directly as an async function
+		if (route.handler) {
 			const mockProps = {
 				request,
 				params: {},
@@ -54,7 +54,7 @@ describe("createRoute with spec validation", () => {
 				headers: {},
 				body: undefined,
 			};
-			await expect(route.callback(mockProps)).rejects.toThrow();
+			await expect(route.handler(mockProps)).rejects.toThrow();
 		}
 	});
 
@@ -74,7 +74,7 @@ describe("createRoute with spec validation", () => {
 
 		const route = createRoute({
 			method: "GET",
-			callback: async () => {
+			handler: async () => {
 				// This returns 200 and spec expects 200
 				return Response.json({ success: true });
 			},
@@ -85,8 +85,8 @@ describe("createRoute with spec validation", () => {
 
 		// This should not throw an error
 		let response: Response | undefined;
-		await expect(async () => {
-			if (route.callback) {
+		expect(async () => {
+			if (route.handler) {
 				const mockProps = {
 					request,
 					params: {},
@@ -94,7 +94,7 @@ describe("createRoute with spec validation", () => {
 					headers: {},
 					body: undefined,
 				};
-				response = await route.callback(mockProps);
+				response = await route.handler(mockProps);
 			}
 		}).not.toThrow();
 
@@ -104,7 +104,7 @@ describe("createRoute with spec validation", () => {
 	test("should work without spec validation", async () => {
 		const route = createRoute({
 			method: "GET",
-			callback: async () => {
+			handler: async () => {
 				return Response.json({ success: true });
 			},
 			// No spec provided
@@ -115,7 +115,7 @@ describe("createRoute with spec validation", () => {
 		// This should not throw an error even without spec
 		let response: Response | undefined;
 		await expect(async () => {
-			if (route.callback) {
+			if (route.handler) {
 				const mockProps = {
 					request,
 					params: {},
@@ -123,7 +123,7 @@ describe("createRoute with spec validation", () => {
 					headers: {},
 					body: undefined,
 				};
-				response = await route.callback(mockProps);
+				response = await route.handler(mockProps);
 			}
 		}).not.toThrow();
 

@@ -1,6 +1,6 @@
 import type { OpenAPIV3_1 } from "openapi-types";
 import { z } from "zod";
-import type { ProxyCallback, ProxyConfig } from "./config";
+import type { ProxyConfig } from "./config";
 import { getConfig } from "./config";
 import { getLogger } from "./logger";
 
@@ -98,7 +98,7 @@ export function findMatchingProxyConfig(
 }
 
 /**
- * Executes a proxy request with optional callback for authentication/authorization
+ * Executes a proxy request with optional handler for authentication/authorization
  */
 export async function executeProxyRequest(
 	context: ProxyExecutionContext,
@@ -107,29 +107,39 @@ export async function executeProxyRequest(
 	const logger = getLogger();
 
 	try {
-		// Execute callback if provided (for auth, logging, etc.)
-		if (config.callback) {
-			const callbackResult = await config.callback({
+		// Execute handler if provided (for auth, logging, etc.)
+		if (config.handler) {
+			const handlerResult = await config.handler({
 				request,
 				params,
 				target: config.target,
 			});
 
-			// If callback says not to proceed, return the callback response
-			if (!callbackResult.proceed) {
+			// If handler says not to proceed, return the handler response
+			if (!handlerResult.proceed) {
 				return (
-					callbackResult.response ||
+					handlerResult.response ||
 					new Response("Proxy request blocked", { status: 403 })
 				);
 			}
 
-			// Update target and headers if callback provided them
-			if (callbackResult.target) {
-				config.target = callbackResult.target;
+			// Update target and headers if handler provided them
+			if (handlerResult.target) {
+				config.target = handlerResult.target;
 			}
-			if (callbackResult.headers) {
-				config.headers = { ...config.headers, ...callbackResult.headers };
+			if (handlerResult.headers) {
+				config.headers = { ...config.headers, ...handlerResult.headers };
 			}
+		}
+
+		// If no target is defined after handler execution, we can't proxy
+		if (!config.target) {
+			logger.warn(
+				"No target defined for proxy request - request handled by handler",
+			);
+			// This means the handler should have returned a response in the handler
+			// If we reach here without a response, it's likely a configuration error
+			return new Response("No proxy target configured", { status: 500 });
 		}
 
 		// Build target URL
@@ -164,7 +174,7 @@ export async function executeProxyRequest(
 		const requestOptions: RequestInit = {
 			method: request.method,
 			headers,
-			signal: AbortSignal.timeout(config.timeout),
+			signal: AbortSignal.timeout(config.timeout || 10000),
 		};
 
 		// Include body for methods that support it
@@ -173,8 +183,9 @@ export async function executeProxyRequest(
 		}
 
 		// Execute proxy request with retries
+		const maxRetries = config.retries || 0;
 		let lastError: Error | null = null;
-		for (let attempt = 0; attempt <= config.retries; attempt++) {
+		for (let attempt = 0; attempt <= maxRetries; attempt++) {
 			try {
 				const response = await fetch(targetUrl.toString(), requestOptions);
 
@@ -187,7 +198,7 @@ export async function executeProxyRequest(
 			} catch (error) {
 				lastError = error as Error;
 
-				if (attempt < config.retries) {
+				if (attempt < maxRetries) {
 					logger.warn(
 						`Proxy attempt ${attempt + 1} failed, retrying: ${lastError.message}`,
 					);
@@ -201,7 +212,7 @@ export async function executeProxyRequest(
 
 		// All attempts failed
 		logger.error(
-			`Proxy failed after ${config.retries + 1} attempts: ${lastError?.message}`,
+			`Proxy failed after ${maxRetries + 1} attempts: ${lastError?.message}`,
 		);
 
 		return new Response("Proxy request failed", {
@@ -217,33 +228,6 @@ export async function executeProxyRequest(
 			statusText: "Internal Server Error",
 		});
 	}
-}
-
-/**
- * Utility function to create proxy configurations programmatically
- */
-export function createProxyConfig(
-	pattern: string,
-	target: string,
-	options: {
-		callback?: ProxyCallback;
-		enabled?: boolean;
-		description?: string;
-		headers?: Record<string, string>;
-		timeout?: number;
-		retries?: number;
-	} = {},
-): ProxyConfig {
-	return {
-		pattern,
-		target,
-		enabled: options.enabled ?? true,
-		description: options.description,
-		headers: options.headers,
-		timeout: options.timeout ?? 10000,
-		retries: options.retries ?? 0,
-		callback: options.callback,
-	};
 }
 
 // Type helpers for extracting types from Zod schemas
@@ -711,36 +695,36 @@ export function createTypedResponse<T extends OpenAPIV3_1.OperationObject>(
 
 export type CreateRouteProps<TSpec extends SpecItem | undefined = undefined> = {
 	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-	callback?: (props: RouteProps<TSpec>) => Promise<Response>;
+	handler?: (props: RouteProps<TSpec>) => Promise<Response>;
 	spec?: TSpec;
 };
 
 export type RouteDefinition<TSpec extends SpecItem | undefined = undefined> = {
 	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-	callback?: (props: RouteProps<TSpec>) => Promise<Response>;
+	handler?: (props: RouteProps<TSpec>) => Promise<Response>;
 	spec?: TSpec;
 };
 
 // Enhanced createRoute function with parameter validation and type inference
 export function createRoute<TSpec extends SpecItem | undefined = undefined>({
 	method,
-	callback,
+	handler,
 	spec,
 }: CreateRouteProps<TSpec>): RouteDefinition<TSpec> {
-	if (!callback) {
-		return { method, callback, spec } as RouteDefinition<TSpec>;
+	if (!handler) {
+		return { method, handler, spec } as RouteDefinition<TSpec>;
 	}
 
-	// If spec is provided, wrap the callback with validation
-	const wrappedCallback = spec
+	// If spec is provided, wrap the handler with validation
+	const wrappedHandler = spec
 		? async (props: RouteProps<undefined>): Promise<Response> => {
 				const logger = getLogger();
 				const config = getConfig();
 				// Validate and parse parameters according to spec
 				const validatedProps = await validateAndParseParameters(props, spec);
 
-				// Call the original callback with validated parameters
-				const response = await callback(validatedProps as RouteProps<TSpec>);
+				// Call the original handler with validated parameters
+				const response = await handler(validatedProps as RouteProps<TSpec>);
 
 				try {
 					validateResponseAgainstSpec(response, spec, method);
@@ -762,9 +746,9 @@ export function createRoute<TSpec extends SpecItem | undefined = undefined>({
 
 				return response;
 			}
-		: (callback as (props: RouteProps<undefined>) => Promise<Response>);
+		: (handler as (props: RouteProps<undefined>) => Promise<Response>);
 
-	return { method, callback: wrappedCallback, spec } as RouteDefinition<TSpec>;
+	return { method, handler: wrappedHandler, spec } as RouteDefinition<TSpec>;
 }
 
 /**

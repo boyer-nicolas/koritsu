@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { Api, createProxyConfig, type ProxyCallback } from "../../src";
+import { Api, type ProxyHandler } from "../../src";
 
 describe("Proxy Integration Tests", () => {
 	// biome-ignore lint/suspicious/noExplicitAny: This is a test file
@@ -29,7 +29,7 @@ describe("Proxy Integration Tests", () => {
 		mockTargetPort = mockTargetServer.port;
 
 		// Create API server with proxy configuration
-		const authCallback: ProxyCallback = async ({ request }) => {
+		const authHandler: ProxyHandler = async ({ request }) => {
 			const authHeader = request.headers.get("authorization");
 
 			if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -79,43 +79,37 @@ describe("Proxy Integration Tests", () => {
 			proxy: {
 				enabled: true,
 				configs: [
-					// Protected routes with auth callback
-					createProxyConfig(
-						"/api/protected/*",
-						`http://localhost:${mockTargetPort}`,
-						{
-							description: "Protected API endpoints",
-							callback: authCallback,
-							timeout: 5000,
-						},
-					),
-					// Public routes without callback
-					createProxyConfig(
-						"/api/public/*",
-						`http://localhost:${mockTargetPort}`,
-						{
-							description: "Public API endpoints",
-							timeout: 5000,
-						},
-					),
+					// Protected routes with auth handler
+					{
+						pattern: "/api/protected/*",
+						target: `http://localhost:${mockTargetPort}`,
+						description: "Protected API endpoints",
+						handler: authHandler,
+						timeout: 5000,
+					},
+					// Public routes without handler
+					{
+						pattern: "/api/public/*",
+						target: `http://localhost:${mockTargetPort}`,
+						description: "Public API endpoints",
+						timeout: 5000,
+					},
 					// User routes with parameter extraction
-					createProxyConfig(
-						"/users/*/profile",
-						`http://localhost:${mockTargetPort}`,
-						{
-							description: "User profile endpoints",
-							callback: async ({ params }) => {
-								const userId = params.param0;
-								return {
-									proceed: true,
-									headers: {
-										"X-User-ID": userId || "unknown",
-									},
-								};
-							},
-							timeout: 5000,
+					{
+						pattern: "/users/*/profile",
+						target: `http://localhost:${mockTargetPort}`,
+						description: "User profile endpoints",
+						handler: async ({ params }) => {
+							const userId = params.param0;
+							return {
+								proceed: true,
+								headers: {
+									"X-User-ID": userId || "unknown",
+								},
+							};
 						},
-					),
+						timeout: 5000,
+					},
 				],
 			},
 		});
@@ -269,13 +263,11 @@ describe("Proxy Integration Tests", () => {
 				proxy: {
 					enabled: true,
 					configs: [
-						createProxyConfig(
-							"/slow/*",
-							`http://localhost:${slowServer.port}`,
-							{
-								timeout: 1000, // 1 second timeout
-							},
-						),
+						{
+							pattern: "/slow/*",
+							target: `http://localhost:${slowServer.port}`,
+							timeout: 1000, // 1 second timeout
+						},
 					],
 				},
 			});
@@ -305,14 +297,12 @@ describe("Proxy Integration Tests", () => {
 			proxy: {
 				enabled: true,
 				configs: [
-					createProxyConfig(
-						"/nonexistent/*",
-						"http://127.0.0.1:12345", // Use a valid but unlikely-to-be-used port
-						{
-							timeout: 2000,
-							retries: 0,
-						},
-					),
+					{
+						pattern: "/nonexistent/*",
+						target: "http://127.0.0.1:12345", // Use a valid but unlikely-to-be-used port
+						timeout: 2000,
+						retries: 0,
+					},
 				],
 			},
 		});
@@ -324,6 +314,122 @@ describe("Proxy Integration Tests", () => {
 				`http://localhost:${testServer.port}/nonexistent/test`,
 			);
 			expect(response.status).toBe(502); // Bad Gateway
+		} finally {
+			testServer.stop();
+		}
+	});
+
+	test("should handle auth-only proxy without target", async () => {
+		// Auth handler that doesn't need to proxy to another service
+		const authOnlyHandler: ProxyHandler = async ({ request }) => {
+			const authHeader = request.headers.get("authorization");
+
+			if (!authHeader || !authHeader.startsWith("Bearer ")) {
+				return {
+					proceed: false,
+					response: new Response(
+						JSON.stringify({
+							error: "Unauthorized",
+							message: "Missing authorization header",
+						}),
+						{
+							status: 401,
+							headers: { "Content-Type": "application/json" },
+						},
+					),
+				};
+			}
+
+			const token = authHeader.substring(7);
+			if (token !== "valid-auth-token") {
+				return {
+					proceed: false,
+					response: new Response(
+						JSON.stringify({ error: "Forbidden", message: "Invalid token" }),
+						{
+							status: 403,
+							headers: { "Content-Type": "application/json" },
+						},
+					),
+				};
+			}
+
+			// Handle auth validation locally, return success response
+			return {
+				proceed: false, // Don't proxy anywhere
+				response: new Response(
+					JSON.stringify({
+						success: true,
+						message: "Authentication successful",
+						user: { id: "test-user", role: "admin" },
+					}),
+					{
+						status: 200,
+						headers: { "Content-Type": "application/json" },
+					},
+				),
+			};
+		};
+
+		const api = new Api({
+			environment: "test",
+			server: {
+				port: 0,
+				routes: { dir: "./tests/fixtures/routes" },
+			},
+			proxy: {
+				enabled: true,
+				configs: [
+					{
+						pattern: "/auth/*",
+						// No target specified - handled entirely by the handler
+						description: "Authentication-only endpoints",
+						handler: authOnlyHandler,
+					},
+				],
+			},
+		});
+
+		const testServer = await api.start();
+
+		try {
+			// Test missing auth header
+			const response1 = await fetch(
+				`http://localhost:${testServer.port}/auth/validate`,
+			);
+			expect(response1.status).toBe(401);
+			// biome-ignore lint/suspicious/noExplicitAny: This is a test file
+			const data1 = (await response1.json()) as any;
+			expect(data1.error).toBe("Unauthorized");
+
+			// Test invalid token
+			const response2 = await fetch(
+				`http://localhost:${testServer.port}/auth/validate`,
+				{
+					headers: {
+						Authorization: "Bearer invalid-token",
+					},
+				},
+			);
+			expect(response2.status).toBe(403);
+			// biome-ignore lint/suspicious/noExplicitAny: This is a test file
+			const data2 = (await response2.json()) as any;
+			expect(data2.error).toBe("Forbidden");
+
+			// Test valid token
+			const response3 = await fetch(
+				`http://localhost:${testServer.port}/auth/validate`,
+				{
+					headers: {
+						Authorization: "Bearer valid-auth-token",
+					},
+				},
+			);
+			expect(response3.status).toBe(200);
+			// biome-ignore lint/suspicious/noExplicitAny: This is a test file
+			const data3 = (await response3.json()) as any;
+			expect(data3.success).toBe(true);
+			expect(data3.user.id).toBe("test-user");
 		} finally {
 			testServer.stop();
 		}

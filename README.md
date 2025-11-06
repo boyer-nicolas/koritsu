@@ -50,7 +50,7 @@ import { z } from "zod";
 
 export const GET = createRoute({
   method: "GET",
-  callback: async () => {
+  handler: async () => {
     return Response.json({ message: "Hello, world!" });
   },
   spec: {

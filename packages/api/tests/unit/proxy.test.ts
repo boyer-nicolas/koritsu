@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { ProxyConfig } from "../../src/lib/config";
 import {
-	createProxyConfig,
 	findMatchingProxyConfig,
 	matchProxyPattern,
 } from "../../src/lib/helpers";
@@ -69,19 +68,30 @@ describe("Proxy Pattern Matching", () => {
 
 	describe("findMatchingProxyConfig", () => {
 		const mockConfigs: ProxyConfig[] = [
-			createProxyConfig("/api/*", "https://api.example.com", {
+			{
+				pattern: "/api/*",
+				target: "https://api.example.com",
 				description: "General API proxy",
-			}),
-			createProxyConfig("/api/auth/*", "https://auth.example.com", {
+				enabled: true,
+			},
+			{
+				pattern: "/api/auth/*",
+				target: "https://auth.example.com",
 				description: "Auth-specific proxy",
-			}),
-			createProxyConfig("/users/*/profile", "https://users.example.com", {
+				enabled: true,
+			},
+			{
+				pattern: "/users/*/profile",
+				target: "https://users.example.com",
 				description: "User profile proxy",
-			}),
-			createProxyConfig("/disabled/*", "https://disabled.example.com", {
-				enabled: false,
+				enabled: true,
+			},
+			{
+				pattern: "/disabled/*",
+				target: "https://disabled.example.com",
 				description: "Disabled proxy",
-			}),
+				enabled: false,
+			},
 		];
 
 		test("should find the most specific matching pattern", () => {
@@ -122,9 +132,21 @@ describe("Proxy Pattern Matching", () => {
 
 		test("should prioritize patterns with fewer wildcards", () => {
 			const configs: ProxyConfig[] = [
-				createProxyConfig("/api/*", "https://general.example.com"),
-				createProxyConfig("/api/*/users", "https://specific.example.com"),
-				createProxyConfig("/api/v1/users", "https://exact.example.com"),
+				{
+					pattern: "/api/*",
+					target: "https://general.example.com",
+					enabled: true,
+				},
+				{
+					pattern: "/api/*/users",
+					target: "https://specific.example.com",
+					enabled: true,
+				},
+				{
+					pattern: "/api/v1/users",
+					target: "https://exact.example.com",
+					enabled: true,
+				},
 			];
 
 			// Most specific (no wildcards) should win
@@ -141,43 +163,47 @@ describe("Proxy Pattern Matching", () => {
 		});
 	});
 
-	describe("createProxyConfig", () => {
-		test("should create proxy config with default values", () => {
-			const config = createProxyConfig("/test/*", "https://test.example.com");
+	test("should create proxy config with custom options", () => {
+		const mockHandler = async () => ({ proceed: true });
+		const config: ProxyConfig = {
+			pattern: "/custom/*",
+			target: "https://custom.example.com",
+			enabled: false,
+			description: "Custom proxy",
+			headers: { "X-Custom": "value" },
+			timeout: 5000,
+			retries: 3,
+			handler: mockHandler,
+		};
 
-			expect(config.pattern).toBe("/test/*");
-			expect(config.target).toBe("https://test.example.com");
-			expect(config.enabled).toBe(true);
-			expect(config.timeout).toBe(10000);
-			expect(config.retries).toBe(0);
-			expect(config.description).toBeUndefined();
-			expect(config.headers).toBeUndefined();
-			expect(config.callback).toBeUndefined();
+		expect(config.pattern).toBe("/custom/*");
+		expect(config.target).toBe("https://custom.example.com");
+		expect(config.enabled).toBe(false);
+		expect(config.description).toBe("Custom proxy");
+		expect(config.headers).toEqual({ "X-Custom": "value" });
+		expect(config.timeout).toBe(5000);
+		expect(config.retries).toBe(3);
+		expect(config.handler).toBe(mockHandler);
+	});
+
+	test("should create proxy config without target for auth-only scenarios", () => {
+		const authHandler = async () => ({
+			proceed: false,
+			response: new Response("Authorized", { status: 200 }),
 		});
 
-		test("should create proxy config with custom options", () => {
-			const mockCallback = async () => ({ proceed: true });
-			const config = createProxyConfig(
-				"/custom/*",
-				"https://custom.example.com",
-				{
-					enabled: false,
-					description: "Custom proxy",
-					headers: { "X-Custom": "value" },
-					timeout: 5000,
-					retries: 3,
-					callback: mockCallback,
-				},
-			);
+		const config: ProxyConfig = {
+			pattern: "/auth/*",
+			// No target provided - handled entirely by handler
+			enabled: true,
+			description: "Authentication-only proxy",
+			handler: authHandler,
+		};
 
-			expect(config.pattern).toBe("/custom/*");
-			expect(config.target).toBe("https://custom.example.com");
-			expect(config.enabled).toBe(false);
-			expect(config.description).toBe("Custom proxy");
-			expect(config.headers).toEqual({ "X-Custom": "value" });
-			expect(config.timeout).toBe(5000);
-			expect(config.retries).toBe(3);
-			expect(config.callback).toBe(mockCallback);
-		});
+		expect(config.pattern).toBe("/auth/*");
+		expect(config.target).toBeUndefined();
+		expect(config.enabled).toBe(true);
+		expect(config.description).toBe("Authentication-only proxy");
+		expect(config.handler).toBe(authHandler);
 	});
 });

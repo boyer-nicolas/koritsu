@@ -4,7 +4,7 @@ import { getBucketById, singleBucketSchema } from "../../../lib/storage";
 
 export const GET = createRoute({
 	method: "GET",
-	callback: async ({ params }) => {
+	handler: async ({ params }) => {
 		const bucket = getBucketById(params.id);
 
 		if (!bucket) {

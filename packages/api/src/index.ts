@@ -3,12 +3,11 @@ import {
 	type Config,
 	ConfigSchema,
 	getConfig,
-	type ProxyCallback,
 	type ProxyConfig,
+	type ProxyHandler,
 } from "./lib/config";
 import {
 	type CreateRouteProps,
-	createProxyConfig,
 	createRoute,
 	createRouteCollection,
 	createTypedResponse,
@@ -26,11 +25,10 @@ export {
 	type CreateRouteProps,
 	type RouteDefinition,
 	type OmbrageServer,
-	type ProxyCallback,
+	type ProxyHandler,
 	type ProxyConfig,
 	createTypedResponse,
 	createRoute,
 	createRouteCollection,
-	createProxyConfig,
 	FileRouter,
 };

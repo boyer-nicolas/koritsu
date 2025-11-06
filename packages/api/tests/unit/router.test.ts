@@ -39,13 +39,13 @@ describe("router.ts", () => {
 
 	describe("handleRequest", () => {
 		test("should handle GET request successfully", async () => {
-			const mockCallback = mock(async () => new Response("Hello World"));
+			const mockHandler = mock(async () => new Response("Hello World"));
 
 			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { method: "GET", callback: mockCallback },
+					GET: { method: "GET", handler: mockHandler },
 				},
 			});
 
@@ -54,7 +54,7 @@ describe("router.ts", () => {
 			});
 			const response = await router.handleRequest(request);
 
-			expect(mockCallback).toHaveBeenCalledWith({
+			expect(mockHandler).toHaveBeenCalledWith({
 				request,
 				params: {},
 				body: undefined,
@@ -65,7 +65,7 @@ describe("router.ts", () => {
 		});
 
 		test("should handle POST request with body", async () => {
-			const mockCallback = mock(async ({ body }: { body?: unknown }) => {
+			const mockHandler = mock(async ({ body }: { body?: unknown }) => {
 				return Response.json({ received: body });
 			});
 
@@ -73,7 +73,7 @@ describe("router.ts", () => {
 				path: "/api/users",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					POST: { method: "POST", callback: mockCallback },
+					POST: { method: "POST", handler: mockHandler },
 				},
 			});
 
@@ -86,7 +86,7 @@ describe("router.ts", () => {
 			const response = await router.handleRequest(request);
 			const result = await response.json();
 
-			expect(mockCallback).toHaveBeenCalledWith({
+			expect(mockHandler).toHaveBeenCalledWith({
 				request,
 				params: {},
 				body: { name: "John" },
@@ -118,7 +118,7 @@ describe("router.ts", () => {
 				routes: {
 					GET: {
 						method: "GET",
-						callback: async () => new Response("GET only"),
+						handler: async () => new Response("GET only"),
 					},
 				},
 			});
@@ -137,12 +137,12 @@ describe("router.ts", () => {
 			});
 		});
 
-		test("should return 405 when route has no callback", async () => {
+		test("should return 405 when route has no handler", async () => {
 			router.routes.set("/test", {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { method: "GET" }, // No callback
+					GET: { method: "GET" }, // No handler
 				},
 			});
 
@@ -161,7 +161,7 @@ describe("router.ts", () => {
 		});
 
 		test("should handle dynamic routes with parameters", async () => {
-			const mockCallback = mock(
+			const mockHandler = mock(
 				async ({ params }: { params?: Record<string, string> }) => {
 					return Response.json({ id: params?.id, message: "Found" });
 				},
@@ -171,7 +171,7 @@ describe("router.ts", () => {
 				path: "/users/[id]",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { callback: mockCallback },
+					GET: { handler: mockHandler },
 				},
 			});
 
@@ -183,7 +183,7 @@ describe("router.ts", () => {
 			expect(response.status).toBe(200);
 			const result = await response.json();
 			expect(result).toEqual({ id: "123", message: "Found" });
-			expect(mockCallback).toHaveBeenCalledWith({
+			expect(mockHandler).toHaveBeenCalledWith({
 				request,
 				params: { id: "123" },
 				body: undefined,
@@ -193,7 +193,7 @@ describe("router.ts", () => {
 		});
 
 		test("should handle multiple dynamic parameters", async () => {
-			const mockCallback = mock(
+			const mockHandler = mock(
 				async ({ params }: { params?: Record<string, string> }) => {
 					return Response.json({
 						userId: params?.userId,
@@ -206,7 +206,7 @@ describe("router.ts", () => {
 				path: "/users/[userId]/posts/[postId]",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { callback: mockCallback },
+					GET: { handler: mockHandler },
 				},
 			});
 
@@ -218,7 +218,7 @@ describe("router.ts", () => {
 			expect(response.status).toBe(200);
 			const result = await response.json();
 			expect(result).toEqual({ userId: "123", postId: "456" });
-			expect(mockCallback).toHaveBeenCalledWith({
+			expect(mockHandler).toHaveBeenCalledWith({
 				request,
 				params: { userId: "123", postId: "456" },
 				body: undefined,
@@ -228,7 +228,7 @@ describe("router.ts", () => {
 		});
 
 		test("should handle query parameters", async () => {
-			const mockCallback = mock(
+			const mockHandler = mock(
 				async ({ query }: { query?: Record<string, string> }) => {
 					return Response.json({ filter: query?.filter, sort: query?.sort });
 				},
@@ -238,7 +238,7 @@ describe("router.ts", () => {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { callback: mockCallback },
+					GET: { handler: mockHandler },
 				},
 			});
 
@@ -253,7 +253,7 @@ describe("router.ts", () => {
 			expect(response.status).toBe(200);
 			const result = await response.json();
 			expect(result).toEqual({ filter: "active", sort: "name" });
-			expect(mockCallback).toHaveBeenCalledWith({
+			expect(mockHandler).toHaveBeenCalledWith({
 				request,
 				params: {},
 				body: undefined,
@@ -263,7 +263,7 @@ describe("router.ts", () => {
 		});
 
 		test("should return 500 on handler error", async () => {
-			const mockCallback = mock(async () => {
+			const mockHandler = mock(async () => {
 				throw new Error("Handler error");
 			});
 
@@ -271,7 +271,7 @@ describe("router.ts", () => {
 				path: "/test",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { method: "GET", callback: mockCallback },
+					GET: { method: "GET", handler: mockHandler },
 				},
 			});
 
@@ -290,13 +290,13 @@ describe("router.ts", () => {
 		});
 
 		test("should find best matching route for nested paths", async () => {
-			const callback = mock(async () => new Response("Found"));
+			const handler = mock(async () => new Response("Found"));
 
 			router.routes.set("/api/users", {
 				path: "/api/users",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { method: "GET", callback },
+					GET: { method: "GET", handler },
 				},
 			});
 
@@ -324,7 +324,7 @@ describe("router.ts", () => {
 			const mockRoutes = {
 				GET: {
 					method: "GET",
-					callback: async () => Response.json({}),
+					handler: async () => Response.json({}),
 					spec: {
 						format: "json",
 						responses: {
@@ -357,7 +357,7 @@ describe("router.ts", () => {
 			const mockRoutes = {
 				GET: {
 					method: "GET",
-					callback: async () => Response.json({}),
+					handler: async () => Response.json({}),
 					spec: {
 						format: "json",
 						responses: {
@@ -404,7 +404,7 @@ describe("router.ts", () => {
 			const mockRoutesWithTags = {
 				GET: {
 					method: "GET",
-					callback: async () => Response.json({}),
+					handler: async () => Response.json({}),
 					spec: {
 						format: "json",
 						tags: ["Users", "Authentication"],
@@ -419,7 +419,7 @@ describe("router.ts", () => {
 				},
 				POST: {
 					method: "POST",
-					callback: async () => Response.json({}),
+					handler: async () => Response.json({}),
 					spec: {
 						format: "json",
 						tags: ["Users"],
@@ -437,7 +437,7 @@ describe("router.ts", () => {
 			const mockHealthRoutes = {
 				GET: {
 					method: "GET",
-					callback: async () => Response.json({}),
+					handler: async () => Response.json({}),
 					spec: {
 						format: "json",
 						tags: ["Health"],
@@ -520,7 +520,7 @@ describe("router.ts", () => {
 			const mockRoutesWithSpec = {
 				GET: {
 					method: "GET",
-					callback: async () => Response.json({}),
+					handler: async () => Response.json({}),
 					spec: {
 						format: "json",
 						responses: {
@@ -545,7 +545,7 @@ describe("router.ts", () => {
 				routes: {
 					GET: {
 						method: "GET",
-						callback: async () => Response.json({}),
+						handler: async () => Response.json({}),
 						// No spec
 					},
 				},
@@ -625,13 +625,13 @@ describe("router.ts", () => {
 
 	describe("path matching", () => {
 		test("should match exact paths first", async () => {
-			const exactCallback = mock(async () => new Response("Exact match"));
+			const exactHandler = mock(async () => new Response("Exact match"));
 
 			router.routes.set("/api/users", {
 				path: "/api/users",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { method: "GET", callback: exactCallback },
+					GET: { method: "GET", handler: exactHandler },
 				},
 			});
 
@@ -640,17 +640,17 @@ describe("router.ts", () => {
 			});
 			await router.handleRequest(request);
 
-			expect(exactCallback).toHaveBeenCalled();
+			expect(exactHandler).toHaveBeenCalled();
 		});
 
 		test("should fall back to parent route when exact match not found", async () => {
-			const parentCallback = mock(async () => new Response("Parent match"));
+			const parentHandler = mock(async () => new Response("Parent match"));
 
 			router.routes.set("/api", {
 				path: "/api",
 				routeFile: "/path/to/route.ts",
 				routes: {
-					GET: { method: "GET", callback: parentCallback },
+					GET: { method: "GET", handler: parentHandler },
 				},
 			});
 
@@ -659,7 +659,7 @@ describe("router.ts", () => {
 			});
 			await router.handleRequest(request);
 
-			expect(parentCallback).toHaveBeenCalled();
+			expect(parentHandler).toHaveBeenCalled();
 		});
 	});
 });

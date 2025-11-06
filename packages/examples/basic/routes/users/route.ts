@@ -4,7 +4,7 @@ import { z } from "zod";
 // Get all users with optional filtering
 export const GET = createRoute({
 	method: "GET",
-	callback: async ({ query }) => {
+	handler: async ({ query }) => {
 		const { limit, search } = query;
 
 		// Mock users data
@@ -72,7 +72,7 @@ export const GET = createRoute({
 // Create a new user
 export const POST = createRoute({
 	method: "POST",
-	callback: async ({ body }) => {
+	handler: async ({ body }) => {
 		const { name, email } = body;
 
 		// Mock user creation

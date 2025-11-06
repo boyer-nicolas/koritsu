@@ -1,13 +1,13 @@
 # Proxy Functionality in Ombrage Framework
 
-This document demonstrates how to use the new proxy functionality with wildcard patterns and callback support.
+This document demonstrates how to use the new proxy functionality with wildcard patterns and handler support.
 
 ## Overview
 
 The proxy system allows you to:
 
 - Forward requests to external services based on wildcard patterns
-- Execute callbacks for authentication, logging, or transformation
+- Execute handlers for authentication, logging, or transformation
 - Handle multiple wildcards in paths for complex routing
 - Configure timeouts, retries, and headers per proxy
 - Support all HTTP methods (GET, POST, PUT, DELETE, etc.)
@@ -15,19 +15,24 @@ The proxy system allows you to:
 ## Basic Configuration
 
 ```typescript
-import { Api, createProxyConfig } from "ombrage-bun-api";
+import { Api } from "ombrage-bun-api";
 
 const api = new Api({
   environment: "development",
   proxy: {
     enabled: true,
     configs: [
-      // Simple proxy without callback
-      createProxyConfig("/api/*", "https://external-api.example.com"),
+      // Simple proxy without handler
+      {
+        pattern: "/api/*",
+        target: "https://external-api.example.com",
+      },
 
-      // Proxy with authentication callback
-      createProxyConfig("/api/protected/*", "https://secure-api.example.com", {
-        callback: async ({ request, params, target }) => {
+      // Proxy with authentication handler
+      {
+        pattern: "/api/protected/*",
+        target: "https://secure-api.example.com",
+        handler: async ({ request, params, target }) => {
           const token = request.headers.get("authorization");
           if (!token) {
             return {
@@ -49,25 +54,34 @@ Wildcards (`*`) can be used anywhere in the path and extracted as parameters:
 
 ```typescript
 // Single wildcard - matches /users/123, /users/admin, etc.
-createProxyConfig("/users/*", "https://user-service.com");
+{
+  pattern: "/users/*",
+  target: "https://user-service.com",
+},
 
 // Multiple wildcards - matches /tenants/acme/services/auth/data
-createProxyConfig("/tenants/*/services/*/data", "https://multi-tenant.com");
+{
+  pattern: "/tenants/*/services/*/data",
+  target: "https://multi-tenant.com",
+},
 
 // Mixed patterns - matches /api/v1/users/123/posts/456
-createProxyConfig("/api/v1/users/*/posts/*", "https://content-service.com");
+{
+  pattern: "/api/v1/users/*/posts/*",
+  target: "https://content-service.com",
+},
 ```
 
-## Callback Functions
+## Handler Functions
 
-Callbacks receive request details and can:
+Handlers receive request details and can:
 
 - Block requests by returning `proceed: false`
 - Modify headers or target URL
 - Perform authentication, logging, rate limiting, etc.
 
 ```typescript
-const authCallback = async ({ request, params, target }) => {
+const authHandler = async ({ request, params, target }) => {
   // Access extracted parameters from wildcards
   const userId = params.param0; // First wildcard value
   const postId = params.param1; // Second wildcard value
@@ -98,9 +112,11 @@ const authCallback = async ({ request, params, target }) => {
 ## Advanced Configuration
 
 ```typescript
-createProxyConfig("/api/external/*", "https://external-service.com", {
+{
+  pattern: "/api/external/*",
+  target: "https://external-service.com",
   description: "External API proxy with auth",
-  callback: authCallback,
+  handler: authHandler,
   timeout: 15000, // 15 second timeout
   retries: 3, // Retry failed requests 3 times
   headers: {
@@ -113,10 +129,10 @@ createProxyConfig("/api/external/*", "https://external-service.com", {
 
 ## Dynamic Target Selection
 
-Callbacks can change the target URL based on request parameters:
+Handlers can change the target URL based on request parameters:
 
 ```typescript
-const routingCallback = async ({ request, params, target }) => {
+const routingHandler = async ({ request, params, target }) => {
   const tenantId = params.param0;
 
   // Route premium tenants to different service
@@ -134,6 +150,97 @@ const routingCallback = async ({ request, params, target }) => {
   };
 };
 ```
+
+## Auth-Only Endpoints (No Proxying)
+
+You can create proxy configurations that handle requests entirely within the handler without forwarding to an external service by omitting the `target` field:
+
+```typescript
+{
+  pattern: "/auth/*",
+  // No target specified - handled entirely by the handler
+  description: "Authentication endpoints handled locally",
+  handler: async ({ request }) => {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/auth/login") {
+      // Handle login logic
+      const body = await request.json() as { username?: string; password?: string };
+
+      if (body.username === "admin" && body.password === "secret") {
+        return {
+          proceed: false, // Don't proxy anywhere
+          response: new Response(JSON.stringify({
+            success: true,
+            token: "jwt-token-here",
+            user: { id: 1, username: "admin" }
+          }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          })
+        };
+      } else {
+        return {
+          proceed: false,
+          response: new Response(JSON.stringify({
+            error: "Invalid credentials"
+          }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" }
+          })
+        };
+      }
+    }
+
+    if (url.pathname === "/auth/validate") {
+      // Handle token validation
+      const authHeader = request.headers.get("authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return {
+          proceed: false,
+          response: new Response(JSON.stringify({
+            error: "Missing authorization header"
+          }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" }
+          })
+        };
+      }
+
+      // Validate token and return user info
+      return {
+        proceed: false,
+        response: new Response(JSON.stringify({
+          valid: true,
+          user: { id: 1, username: "admin" }
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      };
+    }
+
+    // Default 404 for unhandled auth endpoints
+    return {
+      proceed: false,
+      response: new Response(JSON.stringify({
+        error: "Auth endpoint not found"
+      }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" }
+      })
+    };
+  }
+}
+```
+
+This pattern is useful for:
+
+- **Authentication services**: Handle login, logout, token validation locally
+- **API rate limiting**: Block requests without forwarding
+- **Request validation**: Validate and reject malformed requests
+- **Mock endpoints**: Return mock data during development
+- **Health checks**: Respond to health/status requests locally
 
 ## Error Handling
 
@@ -157,7 +264,7 @@ Proxies are checked **before** file-based routes, allowing you to:
 The framework includes comprehensive tests for:
 
 - Pattern matching with various wildcard combinations
-- Callback execution and parameter extraction
+- Handler execution and parameter extraction
 - Authentication and authorization flows
 - Error handling and timeouts
 - Integration with the file-based routing system
@@ -166,21 +273,24 @@ The framework includes comprehensive tests for:
 
 1. **API Gateway**: Proxy different API versions to different services
 2. **Authentication Layer**: Validate tokens before forwarding requests
-3. **Load Balancing**: Route requests based on tenant or user type
-4. **Legacy Migration**: Gradually migrate endpoints from old to new services
-5. **Rate Limiting**: Implement custom rate limiting in callbacks
-6. **Request Transformation**: Modify headers or request data before forwarding
+3. **Auth-Only Services**: Handle authentication endpoints locally without proxying
+4. **Load Balancing**: Route requests based on tenant or user type
+5. **Legacy Migration**: Gradually migrate endpoints from old to new services
+6. **Rate Limiting**: Implement custom rate limiting in handlers
+7. **Request Transformation**: Modify headers or request data before forwarding
+8. **Mock Services**: Return mock responses during development/testing
+9. **Health Checks**: Handle health/status endpoints locally
 
 ## Performance Considerations
 
 - Proxies are checked in order of specificity (fewer wildcards = higher priority)
-- Callbacks should be fast to avoid blocking request processing
+- Handlers should be fast to avoid blocking request processing
 - Use appropriate timeouts to prevent hanging requests
 - Consider retry strategy based on your target service characteristics
 
 ## Security Notes
 
-- Callbacks have access to all request data - handle sensitive information carefully
+- Handlers have access to all request data - handle sensitive information carefully
 - Validate all extracted parameters before using them
 - Consider implementing rate limiting and request size limits
 - Use HTTPS for target URLs when handling sensitive data
