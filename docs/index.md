@@ -37,7 +37,7 @@ features:
 - **[Route Parameters](/core-concepts/parameters)** - Path, query, body, and header parameter validation with Zod
 - **[Configuration](/core-concepts/configuration)** - Server configuration options and environment variables
 - **[OpenAPI Integration](/core-concepts/openapi)** - Automatic documentation generation and Swagger UI
-- **[Proxy Configuration](/examples-patterns/proxy)** - Advanced proxy setup and configuration
+- **[Proxy Configuration](/core-concepts/proxy)** - Advanced proxy setup and configuration
 
 ## Examples & Patterns
 

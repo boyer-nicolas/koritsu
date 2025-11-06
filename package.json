@@ -44,6 +44,7 @@
     "build": "bun run --filter ombrage-bun-api build",
     "lint:fix": "biome check --write .",
     "lint": "biome check",
+    "check:ci": "act --workflows .github/workflows/ci.yaml --pull=false",
     "prepare": "husky",
     "check": "tsc --project tsconfig.json",
     "test": "bun run --workspaces test",
