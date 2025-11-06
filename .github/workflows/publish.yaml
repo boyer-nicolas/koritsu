@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: coverage-report
-          path: coverage/
+          path: packages/api/coverage/
           retention-days: 30
 
       - name: Generate and update coverage badge
