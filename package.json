@@ -56,5 +56,6 @@
     "docs:preview": "vitepress preview"
   },
   "type": "module",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "version": "0.0.1"
 }

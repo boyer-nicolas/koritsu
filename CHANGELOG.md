@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v0.0.1
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.20...v0.0.1)
+
+### 🩹 Fixes
+
+- Publish job ([0266efa](https://github.com/boyer-nicolas/ombrage-bun-api/commit/0266efa))
+- Publish coverage ([d9f79bd](https://github.com/boyer-nicolas/ombrage-bun-api/commit/d9f79bd))
+- Coverage reportsin ci ([408f663](https://github.com/boyer-nicolas/ombrage-bun-api/commit/408f663))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.20
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.19...v0.0.20)
