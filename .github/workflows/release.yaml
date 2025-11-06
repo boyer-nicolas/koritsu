@@ -118,30 +118,32 @@ jobs:
 
       - name: Generate changelog, bump version and publish
         if: steps.changes.outputs.should_publish == 'true'
-        id: release
+        run: bunx changelogen --release --publish --bump --output ../../CHANGELOG.md
+
+      - name: Display new version
+        if: steps.changes.outputs.should_publish == 'true'
+        id: version
         run: |
-          bun run --filter ombrage-bun-api changelog
           NEW_VERSION=$(node -p "require('./packages/api/package.json').version")
           echo "New version: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Push version changes and create tag
+      - name: Pull latest changes
         if: steps.changes.outputs.should_publish == 'true'
-        run: |
-          # Pull latest changes to avoid conflicts
-          git pull origin main --rebase
+        run: git pull origin main --rebase
 
-          # Push version bump and tags
-          git push origin main --follow-tags
+      - name: Push changes
+        if: steps.changes.outputs.should_publish == 'true'
+        run: git push origin main --follow-tags
 
       - name: Create GitHub Release
-        if: steps.changes.outputs.should_publish == 'true' && steps.release.outputs.new_version != ''
+        if: steps.changes.outputs.should_publish == 'true' && steps.version.outputs.new_version != ''
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.release.outputs.new_version }}
-          name: Release ${{ steps.release.outputs.new_version }}
+          tag_name: ${{ steps.version.outputs.new_version }}
+          name: Release ${{ steps.version.outputs.new_version }}
           body: |
             🚀 **Automated release created by GitHub Actions**
 
@@ -150,9 +152,9 @@ jobs:
 
             ## Installation
             ```bash
-            bun install ombrage-bun-api@${{ steps.release.outputs.new_version }}
+            bun install ombrage-bun-api@${{ steps.version.outputs.new_version }}
             # or
-            npm install ombrage-bun-api@${{ steps.release.outputs.new_version }}
+            npm install ombrage-bun-api@${{ steps.version.outputs.new_version }}
             ```
           draft: false
           prerelease: false
