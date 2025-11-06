@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.0.30
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.28...v0.0.30)
+
+### 🩹 Fixes
+
+- Changelog ([00bce13](https://github.com/boyer-nicolas/ombrage-bun-api/commit/00bce13))
+- Changelogen dep ([4fe5060](https://github.com/boyer-nicolas/ombrage-bun-api/commit/4fe5060))
+- Release unused commands ([3fcfbf6](https://github.com/boyer-nicolas/ombrage-bun-api/commit/3fcfbf6))
+- Trigger release workflow on editing itself ([a05d93c](https://github.com/boyer-nicolas/ombrage-bun-api/commit/a05d93c))
+- Publishing ([9b26105](https://github.com/boyer-nicolas/ombrage-bun-api/commit/9b26105))
+
+### 🏡 Chore
+
+- **release:** V0.0.29 ([130e06e](https://github.com/boyer-nicolas/ombrage-bun-api/commit/130e06e))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.29
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.28...v0.0.29)
