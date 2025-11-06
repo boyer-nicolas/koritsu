@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v0.0.34
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.33...v0.0.34)
+
+### 🩹 Fixes
+
+- Release separate steps to prevent silent failures ([12c1f95](https://github.com/boyer-nicolas/ombrage-bun-api/commit/12c1f95))
+- Changelogen path ([a5ce3d6](https://github.com/boyer-nicolas/ombrage-bun-api/commit/a5ce3d6))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.33
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.32...v0.0.33)
