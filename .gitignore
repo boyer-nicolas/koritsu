@@ -10,6 +10,9 @@ dist
 coverage
 *.lcov
 
+# temporary release files
+release-notes.md
+
 # logs
 logs
 _.log

@@ -146,6 +146,16 @@ jobs:
         if: steps.changes.outputs.should_publish == 'true'
         run: git push origin main --follow-tags
 
+      - name: Extract release notes
+        if: steps.changes.outputs.should_publish == 'true'
+        id: extract_release_notes
+        run: |
+          bun run scripts/extract-release-notes.ts
+          CONTENTS=$(cat ./release-notes.md)
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         if: steps.changes.outputs.should_publish == 'true' && steps.version.outputs.new_version != ''
         uses: softprops/action-gh-release@v2
@@ -154,7 +164,7 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.new_version }}
           name: Release ${{ steps.version.outputs.new_version }}
-          body_path: ./CHANGELOG.md
+          body: ${{ steps.extract_release_notes.outputs.release_notes }}
           draft: false
           prerelease: false
           generate_release_notes: false
