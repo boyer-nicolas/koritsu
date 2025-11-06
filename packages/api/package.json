@@ -43,7 +43,7 @@
     "coverage:badge": "bun run ./scripts/generate-coverage-badge.ts",
     "coverage:report": "bun run ./scripts/generate-coverage-report.ts",
     "build:js": "bun run ./build.ts",
-    "build:types": "dts-bundle-generator -o dist/index.d.ts --no-check --external-inlines --inline-declare-externals src/index.ts",
+    "build:types": "dts-bundle-generator -o dist/index.d.ts --no-check --external-inlines --inline-declare-externals --verbose --no-banner --export-referenced-types false src/index.ts",
     "build:clean": "rm -rf dist",
     "build": "bun run build:clean && bun run build:types && bun run build:js",
     "docs:dev": "vitepress dev",

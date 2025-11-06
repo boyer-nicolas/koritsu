@@ -1,0 +1,14 @@
+/node_modules
+/dist/
+/.env
+.DS_Store
+.git
+.vscode/
+.idea/
+.github/
+.husky/
+/docs/
+/scripts/
+*.log
+*.tmp
+*.db
