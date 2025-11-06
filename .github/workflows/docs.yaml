@@ -1,6 +1,12 @@
 name: Deploy Docs
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - ".vitepress/**"
+      - "README.md"
   release:
     types: [published]
   workflow_dispatch:
