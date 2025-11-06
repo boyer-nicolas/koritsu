@@ -1,14 +1,12 @@
-name: Publish Package
+name: Coverage & Docs
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: write
-  packages: write
   pages: write
   id-token: write
 
@@ -16,12 +14,12 @@ env:
   TZ: Europe/Paris
 
 concurrency:
-  group: publish-main
+  group: coverage-main
   cancel-in-progress: true
 
 jobs:
-  publish:
-    name: "Publish"
+  coverage:
+    name: "Update Coverage & Deploy Docs"
     runs-on: ubuntu-latest
 
     steps:
@@ -38,17 +36,10 @@ jobs:
           ref: main
           token: ${{ steps.get_token.outputs.token }}
 
-      - name: Setup NPM authentication
-        if: env.NPM_CONFIG_TOKEN != ''
-        run: |
-          echo "//registry.npmjs.org/:_authToken=$NPM_CONFIG_TOKEN" > ~/.npmrc
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Configure Git
         run: |
-          git config --local user.name "Release Publisher Bot"
-          git config --local user.email "bot@users.noreply.github.com"
+          git config --local user.name "Coverage Bot"
+          git config --local user.email "coverage-bot@users.noreply.github.com"
 
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
@@ -61,15 +52,6 @@ jobs:
 
       - name: Build package
         run: bun run --filter ombrage-bun-api build
-
-      - name: Run checks
-        run: bun run check
-
-      - name: Run linter
-        run: bun run lint
-
-      - name: Run tests
-        run: bun run test
 
       - name: Run tests with coverage
         run: bun run --filter ombrage-bun-api test:coverage
@@ -87,68 +69,11 @@ jobs:
       - name: Generate coverage reports
         run: bun run --filter ombrage-bun-api coverage:report
 
-      - name: Check for changes since last tag
-        id: changes
-        run: |
-          echo "🔍 Checking if we should publish..."
-
-          # Check if the latest commit is just a coverage badge update with [skip ci]
-          LATEST_COMMIT_MSG=$(git log -1 --pretty=%s)
-          echo "Latest commit: $LATEST_COMMIT_MSG"
-
-          if [[ "$LATEST_COMMIT_MSG" == *"[skip ci]"* ]]; then
-            echo "⏭️ Latest commit has [skip ci], will not publish"
-            echo "should_publish=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # Get the latest tag
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "Latest tag: ${LATEST_TAG:-'(none)'}"
-
-          if [ -z "$LATEST_TAG" ]; then
-            echo "🎉 No previous tags found, will publish first release"
-            echo "should_publish=true" >> $GITHUB_OUTPUT
-            echo "is_first_release=true" >> $GITHUB_OUTPUT
-          else
-            # Check if current commit is already tagged
-            if git describe --tags --exact-match HEAD 2>/dev/null; then
-              CURRENT_TAG=$(git describe --tags --exact-match HEAD)
-              echo "🏷️ Current commit is already tagged ($CURRENT_TAG), skipping publish"
-              echo "should_publish=false" >> $GITHUB_OUTPUT
-            else
-              # Check if there are changes since last tag
-              CHANGES=$(git rev-list $LATEST_TAG..HEAD --count)
-              echo "Changes since last tag: $CHANGES commits"
-              
-              if [ "$CHANGES" -gt 0 ]; then
-                echo "🚀 Found $CHANGES commits since last release, will publish"
-                echo "should_publish=true" >> $GITHUB_OUTPUT
-                echo "is_first_release=false" >> $GITHUB_OUTPUT
-              else
-                echo "⏭️ No changes since last release, skipping publish"
-                echo "should_publish=false" >> $GITHUB_OUTPUT
-              fi
-            fi
-          fi
-
-      - name: Generate changelog and bump version
-        if: steps.changes.outputs.should_publish == 'true'
-        id: release
-        run: |
-          # Generate changelog and bump version
-          bun run changelogen --release --bump
-
-          # Get the new version from package.json
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "new_version=v$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version: v$NEW_VERSION"
-
-      - name: Commit and push coverage badge update
+      - name: Commit coverage badge update
         run: |
           # Check if README was modified (coverage badge)
           if ! git diff --quiet README.md; then
-            echo "Committing and pushing updated coverage badge"
+            echo "Committing updated coverage badge"
             git add README.md
             git commit -m "chore: update coverage badge [skip ci]"
             git push origin main
@@ -156,48 +81,9 @@ jobs:
             echo "No coverage badge changes to commit"
           fi
 
-      - name: Publish to NPM
-        if: steps.changes.outputs.should_publish == 'true' && env.NPM_CONFIG_TOKEN != ''
-        run: bun publish --access public --tag latest --ignore-scripts
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Push version changes and tags
-        if: steps.changes.outputs.should_publish == 'true'
-        run: |
-          # Pull latest changes to avoid conflicts
-          git pull origin main --rebase
-
-          # Push version bump and tags (only when publishing)
-          git push origin main --follow-tags
-
-      - name: Create GitHub Release
-        if: steps.changes.outputs.should_publish == 'true' && steps.release.outputs.new_version != ''
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.release.outputs.new_version }}
-          name: Release ${{ steps.release.outputs.new_version }}
-          body: |
-            🚀 **Automated release created by GitHub Actions**
-
-            ## Changes
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes.
-
-            ## Installation
-            ```bash
-            bun install ombrage-bun-api@${{ steps.release.outputs.new_version }}
-            # or
-            npm install ombrage-bun-api@${{ steps.release.outputs.new_version }}
-            ```
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-
   build-docs:
     runs-on: ubuntu-latest
-    needs: publish
+    needs: coverage
     steps:
       - name: Checkout
         uses: actions/checkout@v5
