@@ -15,6 +15,10 @@ permissions:
 env:
   TZ: Europe/Paris
 
+concurrency:
+  group: publish-main
+  cancel-in-progress: true
+
 jobs:
   publish:
     name: "Publish"
@@ -207,7 +211,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile --ignore-scripts --prefer-offline
 
       - name: Build with VitePress
         run: bun run docs:build
