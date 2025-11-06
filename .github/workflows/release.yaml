@@ -175,4 +175,5 @@ jobs:
           generate_release_notes: true
           files: |
             ./CHANGELOG.md
-            packages/api/dist/
+            packages/api/dist/index.d.ts
+            packages/api/dist/index.js
