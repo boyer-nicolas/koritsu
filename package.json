@@ -49,7 +49,7 @@
     "check": "tsc --project tsconfig.json",
     "test": "bun run --workspaces test",
     "generate:config": "bun run ./scripts/generate-config.ts",
-    "publish:local": "bun run ./scripts/publish.ts",
+    "publish:manual": "gh workflow run release.yaml",
     "publish": "changelogen --release --bump && bun publish --tag latest --ignore-scripts && git push && git push --tags",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
