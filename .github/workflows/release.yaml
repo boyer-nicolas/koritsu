@@ -8,11 +8,6 @@ on:
         required: false
         default: false
         type: boolean
-  push:
-    branches:
-      - main
-    tags:
-      - "v*"
 
 permissions:
   contents: write
@@ -30,13 +25,6 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
-    # Skip if commit message contains coverage badge update or release commits
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      github.event_name == 'push' && github.ref_type == 'tag' ||
-      (github.event_name == 'push' && 
-       !contains(github.event.head_commit.message, 'chore: update coverage badge') &&
-       !contains(github.event.head_commit.message, 'chore(release):'))
 
     steps:
       - name: Generate app token
@@ -91,16 +79,8 @@ jobs:
           echo "🔍 Checking if we should publish..."
 
           # If this is a manual workflow dispatch with force_publish, always publish
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.force_publish }}" == "true" ]]; then
+          if [[ "${{ github.event.inputs.force_publish }}" == "true" ]]; then
             echo "🚀 Force publish requested, will publish"
-            echo "should_publish=true" >> $GITHUB_OUTPUT
-            echo "is_first_release=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          # If triggered by tag push, always publish
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "🏷️ Tag push detected, will publish"
             echo "should_publish=true" >> $GITHUB_OUTPUT
             echo "is_first_release=false" >> $GITHUB_OUTPUT
             exit 0
@@ -144,7 +124,7 @@ jobs:
           cd packages/api
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           echo "Current API version: $CURRENT_VERSION"
-          
+
           # Bump patch version using Node.js
           NEW_VERSION=$(node -e "
             const pkg = require('./package.json');
@@ -155,10 +135,10 @@ jobs:
             require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
             console.log(newVersion);
           ")
-          
+
           echo "new_version=v$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New API version: v$NEW_VERSION"
-          
+
           # Generate changelog from root but for the API package
           cd ../..
           echo "## v$NEW_VERSION ($(date '+%Y-%m-%d'))" >> CHANGELOG.md
