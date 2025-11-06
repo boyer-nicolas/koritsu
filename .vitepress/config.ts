@@ -118,6 +118,8 @@ export default defineConfig({
 	srcDir: "docs",
 	title: "Ombrage Bun API",
 	description: "A File-based routing API framework",
+	base: "/ombrage-bun-api/",
+	lastUpdated: true,
 	themeConfig: {
 		search: {
 			provider: "local",
