@@ -1,4 +1,4 @@
-# auth
+# Ombrage API Auth Example
 
 To install dependencies:
 
@@ -9,7 +9,13 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun run dev
 ```
 
-This project was created using `bun init` in bun v1.3.1. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+## Overview
+
+This example demonstrates how to set up an Ombrage API server with authentication proxy functionality. It uses a custom authentication handler to process requests to the `/auth/*` endpoint.
+
+## Urls
+
+- Better Auth OpenAPI Endpoint: `http://localhost:8080/auth/openapi`
