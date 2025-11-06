@@ -508,3 +508,8 @@
 
 - Nicolas Boyer ([@boyer-nicolas](https://github.com/boyer-nicolas))
 
+## v0.0.21 (2025-11-06)
+
+### Changes
+- Automated release
+
