@@ -1,5 +1,7 @@
 # [Ombrage API](https://www.npmjs.com/package/ombrage-bun-api)
 
+> A modern, type-safe file-based routing API framework for Bun with automatic OpenAPI documentation generation.
+
 [![CI](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml/badge.svg)](https://github.com/boyer-nicolas/ombrage-bun-api/actions/workflows/publish.yaml)
 [![NPM Version](https://img.shields.io/npm/v/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
 [![NPM Downloads](https://img.shields.io/npm/dm/ombrage-bun-api)](https://www.npmjs.com/package/ombrage-bun-api)
