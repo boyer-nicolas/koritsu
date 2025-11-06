@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'packages/api/src/**'
-      - 'packages/api/package.json'
+    paths:
+      - '.github/workflows/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '*.json'
+      - '*.js'
+      - '*.ts'
+      - '!packages/api/src/**'
+      - '!packages/api/package.json'
+      - '!*.md'
 
 permissions:
   contents: write
@@ -22,9 +29,6 @@ jobs:
   coverage:
     name: "Update Coverage Badge"
     runs-on: ubuntu-latest
-    # Skip if commit message contains release commits
-    if: |
-      !contains(github.event.head_commit.message, 'chore(release):')
 
     steps:
       - name: Generate app token
