@@ -9,6 +9,8 @@ on:
         default: false
         type: boolean
   push:
+    branches:
+      - main
     tags:
       - "v*"
 
@@ -21,13 +23,20 @@ env:
   TZ: Europe/Paris
 
 concurrency:
-  group: release
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
+    # Skip if commit message contains coverage badge update or release commits
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      github.event_name == 'push' && github.ref_type == 'tag' ||
+      (github.event_name == 'push' && 
+       !contains(github.event.head_commit.message, 'chore: update coverage badge') &&
+       !contains(github.event.head_commit.message, 'chore(release):'))
 
     steps:
       - name: Generate app token

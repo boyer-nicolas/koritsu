@@ -14,13 +14,16 @@ env:
   TZ: Europe/Paris
 
 concurrency:
-  group: coverage-main
+  group: coverage-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   coverage:
     name: "Update Coverage & Deploy Docs"
     runs-on: ubuntu-latest
+    # Skip if commit message contains release commits
+    if: |
+      !contains(github.event.head_commit.message, 'chore(release):')
 
     steps:
       - name: Generate app token
