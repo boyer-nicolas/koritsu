@@ -158,10 +158,7 @@ jobs:
 
       - name: Publish to NPM
         if: steps.changes.outputs.should_publish == 'true' && env.NPM_CONFIG_TOKEN != ''
-        run: |
-          echo "📦 Publishing to NPM..."
-          bun publish --access public --tag latest --ignore-scripts
-          echo "✅ Successfully published to NPM!"
+        run: bun publish --access public --tag latest --ignore-scripts
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
