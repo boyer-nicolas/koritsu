@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.50
+
+[compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/0.0.49...v0.0.50)
+
+### 🚀 Enhancements
+
+- Better release notes ([7c45c2c](https://github.com/boyer-nicolas/ombrage-bun-api/commit/7c45c2c))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.0.49
 
 [compare changes](https://github.com/boyer-nicolas/ombrage-bun-api/compare/v0.0.48...v0.0.49)
