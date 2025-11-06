@@ -118,7 +118,6 @@ jobs:
 
       - name: Generate changelog, bump version and publish
         if: steps.changes.outputs.should_publish == 'true'
-        working-directory: ./packages/api
         run: bun run release
 
       - name: Display new version
@@ -149,7 +148,7 @@ jobs:
             🚀 **Automated release created by GitHub Actions**
 
             ## Changes
-            See the [Changelog](https://github.com/${{ github.repository }}/blob/main/packages/api/CHANGELOG.md) for detailed changes.
+            See the [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for detailed changes.
 
             ## Installation
             ```bash

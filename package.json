@@ -33,7 +33,8 @@
     "publish:manual": "gh workflow run release.yaml",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
+    "docs:preview": "vitepress preview",
+    "release": "bun run --filter ombrage-bun-api release"
   },
   "type": "module"
 }
