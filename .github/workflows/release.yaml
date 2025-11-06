@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths:
-      - 'packages/api/src/**'
-      - 'packages/api/package.json'
-      - '*.md'
-      - '!packages/api/coverage/**'
+      - "packages/api/src/**"
+      - "packages/api/package.json"
+      - "*.md"
+      - "!packages/api/coverage/**"
   workflow_dispatch:
     inputs:
       force_publish:
@@ -33,6 +33,9 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-latest
+    # Skip release commits to prevent auto-triggering
+    if: |
+      !contains(github.event.head_commit.message, 'chore(release):')
 
     steps:
       - name: Generate app token
@@ -121,7 +124,7 @@ jobs:
           cd packages/api
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           echo "Current API version: $CURRENT_VERSION"
-          
+
           # Bump patch version
           NEW_VERSION=$(node -e "
             const pkg = require('./package.json');
@@ -132,10 +135,10 @@ jobs:
             require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
             console.log(newVersion);
           ")
-          
+
           echo "new_version=v$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New API version: v$NEW_VERSION"
-          
+
           # Simple changelog entry
           cd ../..
           echo "## v$NEW_VERSION ($(date '+%Y-%m-%d'))" >> CHANGELOG.md

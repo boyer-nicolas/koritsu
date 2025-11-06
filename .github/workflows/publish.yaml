@@ -5,15 +5,15 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/**'
-      - 'docs/**'
-      - 'scripts/**'
-      - '*.json'
-      - '*.js'
-      - '*.ts'
-      - '!packages/api/src/**'
-      - '!packages/api/package.json'
-      - '!*.md'
+      - ".github/workflows/**"
+      - "docs/**"
+      - "scripts/**"
+      - "*.json"
+      - "*.js"
+      - "*.ts"
+      - "!packages/api/src/**"
+      - "!packages/api/package.json"
+      - "!*.md"
 
 permissions:
   contents: write
@@ -29,6 +29,9 @@ jobs:
   coverage:
     name: "Update Coverage Badge"
     runs-on: ubuntu-latest
+    # Skip release commits to prevent conflicts
+    if: |
+      !contains(github.event.head_commit.message, 'chore(release):')
 
     steps:
       - name: Generate app token
