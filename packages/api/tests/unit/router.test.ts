@@ -529,6 +529,99 @@ describe("router.ts", () => {
 			const response = await router.handleSwaggerRequest("/other");
 			expect(response).toBeNull();
 		});
+
+		test("should work with custom swagger path", async () => {
+			// Create router with custom swagger path
+			const customConfig = validateConfig({
+				server: {
+					routes: { dir: "./dev/routes" },
+				},
+				swagger: {
+					enabled: true,
+					path: "/docs",
+				},
+			});
+			const customRouter = new FileRouter(customConfig);
+			await customRouter.discoverRoutes();
+			await customRouter.loadRoutes();
+
+			// Test Swagger UI at custom path
+			const swaggerResponse = await customRouter.handleSwaggerRequest("/docs");
+			expect(swaggerResponse).toBeInstanceOf(Response);
+			expect(swaggerResponse?.headers.get("Content-Type")).toBe("text/html");
+
+			// Test OpenAPI JSON at custom path
+			const apiDocsResponse = await customRouter.handleSwaggerRequest(
+				"/docs/api-docs.json",
+			);
+			expect(apiDocsResponse).toBeInstanceOf(Response);
+			expect(apiDocsResponse?.headers.get("Content-Type")).toBe(
+				"application/json;charset=utf-8",
+			);
+
+			// Test that root path doesn't work anymore
+			const rootResponse = await customRouter.handleSwaggerRequest("/");
+			expect(rootResponse).toBeNull();
+
+			// Test that old api-docs path doesn't work
+			const oldApiDocsResponse =
+				await customRouter.handleSwaggerRequest("/api-docs.json");
+			expect(oldApiDocsResponse).toBeNull();
+		});
+
+		test("should return null when swagger is disabled", async () => {
+			// Create router with swagger disabled
+			const disabledConfig = validateConfig({
+				server: {
+					routes: { dir: "./dev/routes" },
+				},
+				swagger: {
+					enabled: false,
+					path: "/",
+				},
+			});
+			const disabledRouter = new FileRouter(disabledConfig);
+			await disabledRouter.discoverRoutes();
+			await disabledRouter.loadRoutes();
+
+			// Test that swagger endpoints return null when disabled
+			const swaggerResponse = await disabledRouter.handleSwaggerRequest("/");
+			expect(swaggerResponse).toBeNull();
+
+			const apiDocsResponse =
+				await disabledRouter.handleSwaggerRequest("/api-docs.json");
+			expect(apiDocsResponse).toBeNull();
+		});
+
+		test("should handle swagger path with trailing slash", async () => {
+			// Create router with custom swagger path with trailing slash
+			const customConfig = validateConfig({
+				server: {
+					routes: { dir: "./dev/routes" },
+				},
+				swagger: {
+					enabled: true,
+					path: "/docs/",
+				},
+			});
+			const customRouter = new FileRouter(customConfig);
+			await customRouter.discoverRoutes();
+			await customRouter.loadRoutes();
+
+			// Test Swagger UI at custom path
+			const swaggerResponse = await customRouter.handleSwaggerRequest("/docs/");
+			expect(swaggerResponse).toBeInstanceOf(Response);
+			expect(swaggerResponse?.headers.get("Content-Type")).toBe("text/html");
+
+			// Test OpenAPI JSON at custom path (should normalize trailing slash)
+			const apiDocsResponse = await customRouter.handleSwaggerRequest(
+				"/docs/api-docs.json",
+			);
+			expect(apiDocsResponse).toBeInstanceOf(Response);
+			expect(apiDocsResponse?.headers.get("Content-Type")).toBe(
+				"application/json;charset=utf-8",
+			);
+		});
 	});
 
 	describe("getRouteInfo", () => {
