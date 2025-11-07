@@ -26,7 +26,7 @@ You can use this as a starting point for your own authentication implementation.
 bun init -y
 ```
 
-### 2. Install the required dependencies:
+### 2. Install the required dependencies
 
 ```bash
 bun add better-auth drizzle-orm

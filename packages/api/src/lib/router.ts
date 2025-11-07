@@ -236,7 +236,23 @@ export class FileRouter {
 	 */
 	async handleRequest(request: Request): Promise<Response> {
 		const url = new URL(request.url);
-		const path = url.pathname;
+		let path = url.pathname;
+
+		// Strip the routes basePath prefix if configured
+		const routesBasePath = this.config.server.routes.basePath;
+		if (routesBasePath !== "/" && path.startsWith(routesBasePath)) {
+			path = path.slice(routesBasePath.length) || "/";
+		} else if (routesBasePath !== "/" && !path.startsWith(routesBasePath)) {
+			// If basePath is configured and path doesn't start with it, this is not a route
+			return Response.json(
+				{
+					error: "Not Found",
+					message: `Route ${url.pathname} not found`,
+					status: 404,
+				},
+				{ status: 404 },
+			);
+		}
 
 		// Find matching route
 		const routeMatch = this.findMatchingRoute(path);
@@ -244,7 +260,7 @@ export class FileRouter {
 			return Response.json(
 				{
 					error: "Not Found",
-					message: `Route ${path} not found`,
+					message: `Route ${url.pathname} not found`,
 					status: 404,
 				},
 				{ status: 404 },
@@ -542,6 +558,11 @@ export class FileRouter {
 				let actualPath = specPath === "/" ? routePath : routePath + specPath;
 				// Convert [param] syntax to {param} for OpenAPI
 				actualPath = actualPath.replace(/\[([^\]]+)\]/g, "{$1}");
+				// Add the routes basePath prefix
+				const routesBasePath = this.config.server.routes.basePath;
+				if (routesBasePath !== "/") {
+					actualPath = routesBasePath.replace(/\/$/, "") + actualPath;
+				}
 
 				if (!baseSpec.paths[actualPath]) {
 					baseSpec.paths[actualPath] = {};

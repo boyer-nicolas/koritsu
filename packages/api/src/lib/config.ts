@@ -49,6 +49,10 @@ const ProxyConfigSchema = z.object({
 		),
 	target: z.url().optional().describe("Target URL to proxy requests to"),
 	enabled: z.boolean().default(true),
+	basePath: z
+		.string()
+		.default("/")
+		.describe("Base path for proxy pattern matching"),
 	description: z
 		.string()
 		.optional()

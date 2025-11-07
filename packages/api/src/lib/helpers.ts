@@ -105,7 +105,19 @@ export function findMatchingProxyConfig(
 		});
 
 	for (const config of enabledConfigs) {
-		const matchResult = matchProxyPattern(requestPath, config.pattern);
+		// Apply basePath if configured
+		let targetPath = requestPath;
+		const basePath = config.basePath || "/";
+
+		if (basePath !== "/" && requestPath.startsWith(basePath)) {
+			// Strip basePath prefix for pattern matching
+			targetPath = requestPath.slice(basePath.length) || "/";
+		} else if (basePath !== "/" && !requestPath.startsWith(basePath)) {
+			// Request doesn't match this proxy's basePath
+			continue;
+		}
+
+		const matchResult = matchProxyPattern(targetPath, config.pattern);
 		if (matchResult.matched) {
 			return {
 				matched: true,

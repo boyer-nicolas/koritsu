@@ -74,15 +74,37 @@ export class Api {
 					self.config.server.static.basePath &&
 					url.pathname.startsWith(self.config.server.static.basePath)
 				) {
-					// Check for static file requests
+					// Strip the static basePath prefix and handle the file request
+					const staticPath = url.pathname.slice(
+						self.config.server.static.basePath.length,
+					);
 					const staticResponse = await self.fileRouter.handleStaticRequest(
-						url.pathname.replace(self.config.server.static.basePath, ""),
+						staticPath || "/",
 					);
 					self.logger.http(request, staticResponse, Date.now() - startTime);
 					return staticResponse;
 				}
 
-				// Use file-based router for all other requests
+				// Use file-based router for route requests
+				// Only handle requests that match the routes basePath
+				const routesBasePath = self.config.server.routes.basePath;
+				if (
+					routesBasePath !== "/" &&
+					!url.pathname.startsWith(routesBasePath)
+				) {
+					// This is not a route request, return 404
+					const response = Response.json(
+						{
+							error: "Not Found",
+							message: `Route ${url.pathname} not found`,
+							status: 404,
+						},
+						{ status: 404 },
+					);
+					self.logger.http(request, response, Date.now() - startTime);
+					return response;
+				}
+
 				const response = await self.fileRouter.handleRequest(request);
 				self.logger.http(request, response, Date.now() - startTime);
 				return response;

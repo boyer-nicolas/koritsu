@@ -1,0 +1,95 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Please fill out the form below to help us understand your request.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problem Statement
+      description: Is your feature request related to a problem? Please describe what you're trying to achieve.
+      placeholder: I'm always frustrated when... / I need to... / It would be helpful if...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe the solution you'd like to see implemented.
+      placeholder: I would like to see... / The API should... / A new configuration option for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Describe any alternative solutions or workarounds you've considered.
+      placeholder: I've tried... / Another approach could be... / Existing workarounds include...
+    validations:
+      required: false
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: 🎭 Use Case
+      description: Describe your specific use case and how this feature would benefit you and others.
+      placeholder: This would help me... / In my application I need to... / This would benefit users who...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: feature-area
+    attributes:
+      label: 📋 Feature Area
+      description: Which area(s) of Koritsu would this feature affect?
+      options:
+        - label: File-based routing
+        - label: Configuration system
+        - label: OpenAPI/Swagger documentation
+        - label: Request/Response handling
+        - label: Validation (Zod integration)
+        - label: Error handling
+        - label: Type safety/TypeScript
+        - label: Performance
+        - label: Developer experience
+        - label: Documentation
+        - label: Other
+
+  - type: dropdown
+    id: breaking-change
+    attributes:
+      label: 🔄 Breaking Change
+      description: Would this feature require breaking changes to the existing API?
+      options:
+        - "No, fully backward compatible"
+        - "Minor breaking changes that can be migrated"
+        - "Major breaking changes"
+        - "Unsure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: 🛠️ Implementation Ideas
+      description: If you have ideas about how this could be implemented, please share them.
+      placeholder: This could be implemented by... / A new API could look like... / Configuration might include...
+      render: typescript
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 🔍 Additional Context
+      description: Add any other context, examples, or screenshots about the feature request.
+      placeholder: Here's an example... / Similar features in other frameworks... / Related documentation...
+    validations:
+      required: false

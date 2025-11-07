@@ -1,0 +1,96 @@
+name: 📚 Documentation Issue
+description: Report an issue with documentation or suggest improvements
+title: "[Docs]: "
+labels: ["documentation", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve our documentation! Please describe the issue or improvement you'd like to see.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: 📋 Documentation Type
+      description: What type of documentation issue is this?
+      options:
+        - "Missing documentation"
+        - "Incorrect or outdated information"
+        - "Unclear or confusing content"
+        - "Typo or grammar error"
+        - "Example code not working"
+        - "Suggestion for improvement"
+        - "Other"
+    validations:
+      required: true
+
+  - type: input
+    id: doc-location
+    attributes:
+      label: 📍 Documentation Location
+      description: Where is the documentation issue located?
+      placeholder: e.g., README.md, docs/configuration.md, API reference, code comments
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: 📄 Current Content
+      description: What does the current documentation say? (Copy/paste the relevant section)
+      placeholder: Copy the current text here...
+    validations:
+      required: false
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 🐛 Issue Description
+      description: What's wrong with the current documentation or what's missing?
+      placeholder: The current documentation is unclear because... / This section is missing... / The example doesn't work because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: ✨ Suggested Improvement
+      description: How should the documentation be improved?
+      placeholder: It should say... / Add an example showing... / Update the section to include...
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: 🎭 Use Case
+      description: What were you trying to accomplish when you encountered this documentation issue?
+      placeholder: I was trying to... / I wanted to understand how to... / I needed to configure...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: affected-areas
+    attributes:
+      label: 📋 Affected Documentation Areas
+      description: Which documentation areas are affected?
+      options:
+        - label: README.md (main project overview)
+        - label: Getting Started guide
+        - label: Configuration documentation
+        - label: Routing documentation
+        - label: OpenAPI/Swagger documentation
+        - label: Examples
+        - label: API reference
+        - label: Code comments
+        - label: Error messages
+        - label: Other
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 🔍 Additional Context
+      description: Any other context, screenshots, or examples that would help improve the documentation.
+      placeholder: Here's what I expected to find... / Similar documentation in other projects... / Screenshots showing the issue...
+    validations:
+      required: false

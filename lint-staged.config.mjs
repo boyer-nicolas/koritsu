@@ -11,6 +11,8 @@ export default {
 		() => "bun run --filter koritsu test:coverage",
 		() => "bun run check",
 	],
-	"docs/**/*.md": [() => "bun run docs:build"],
+	"docs/**/*.md": [
+		() => "bun run docs:build",
+	],
 };
 

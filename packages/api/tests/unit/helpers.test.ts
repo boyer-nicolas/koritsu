@@ -11,6 +11,7 @@ import {
 	customSpecToOpenAPI,
 	executeProxyRequest,
 	generateOpenAPIFromCustomSpec,
+	type ProxyExecutionContext,
 	type RouteProps,
 	type SpecItem,
 	zodToOpenAPISchema,
@@ -1041,7 +1042,7 @@ describe("helpers.ts", () => {
 			}) as unknown as typeof fetch;
 
 			const request = new Request("http://localhost/test");
-			const context = {
+			const context: ProxyExecutionContext = {
 				request,
 				params: {},
 				startTime: Date.now(),
@@ -1049,6 +1050,7 @@ describe("helpers.ts", () => {
 					pattern: "/test/*",
 					target: "http://example.com",
 					enabled: true,
+					basePath: "/",
 				},
 			};
 
@@ -1066,7 +1068,7 @@ describe("helpers.ts", () => {
 				response: new Response("Blocked", { status: 403 }),
 			}));
 
-			const context = {
+			const context: ProxyExecutionContext = {
 				request,
 				params: {},
 				startTime: Date.now(),
@@ -1075,6 +1077,7 @@ describe("helpers.ts", () => {
 					target: "http://example.com",
 					enabled: true,
 					handler: mockHandler,
+					basePath: "/",
 				},
 			};
 
@@ -1096,7 +1099,7 @@ describe("helpers.ts", () => {
 				headers: { "X-Custom": "test" },
 			}));
 
-			const context = {
+			const context: ProxyExecutionContext = {
 				request,
 				params: {},
 				startTime: Date.now(),
@@ -1105,6 +1108,7 @@ describe("helpers.ts", () => {
 					target: "http://example.com",
 					enabled: true,
 					handler: mockHandler,
+					basePath: "/",
 				},
 			};
 

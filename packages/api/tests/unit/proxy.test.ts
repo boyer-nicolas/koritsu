@@ -98,24 +98,28 @@ describe("Proxy Pattern Matching", () => {
 				target: "https://api.example.com",
 				description: "General API proxy",
 				enabled: true,
+				basePath: "/",
 			},
 			{
 				pattern: "/api/auth/*",
 				target: "https://auth.example.com",
 				description: "Auth-specific proxy",
 				enabled: true,
+				basePath: "/",
 			},
 			{
 				pattern: "/users/*/profile",
 				target: "https://users.example.com",
 				description: "User profile proxy",
 				enabled: true,
+				basePath: "/",
 			},
 			{
 				pattern: "/disabled/*",
 				target: "https://disabled.example.com",
 				description: "Disabled proxy",
 				enabled: false,
+				basePath: "/",
 			},
 		];
 
@@ -161,16 +165,19 @@ describe("Proxy Pattern Matching", () => {
 					pattern: "/api/*",
 					target: "https://general.example.com",
 					enabled: true,
+					basePath: "/",
 				},
 				{
 					pattern: "/api/*/users",
 					target: "https://specific.example.com",
 					enabled: true,
+					basePath: "/",
 				},
 				{
 					pattern: "/api/v1/users",
 					target: "https://exact.example.com",
 					enabled: true,
+					basePath: "/",
 				},
 			];
 
@@ -199,6 +206,7 @@ describe("Proxy Pattern Matching", () => {
 			timeout: 5000,
 			retries: 3,
 			handler: mockHandler,
+			basePath: "/",
 		};
 
 		expect(config.pattern).toBe("/custom/*");
@@ -223,6 +231,7 @@ describe("Proxy Pattern Matching", () => {
 			enabled: true,
 			description: "Authentication-only proxy",
 			handler: authHandler,
+			basePath: "/",
 		};
 
 		expect(config.pattern).toBe("/auth/*");

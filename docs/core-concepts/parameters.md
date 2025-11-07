@@ -614,6 +614,7 @@ export const GET = createRoute({
    ```
 
 5. **Use enums for controlled values** instead of free-form strings:
+
    ```typescript
    status: z.enum(["active", "inactive", "suspended"]);
    ```
