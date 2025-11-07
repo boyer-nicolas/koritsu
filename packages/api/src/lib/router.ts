@@ -749,6 +749,12 @@ export class FileRouter {
 	 * Serve Swagger UI HTML
 	 */
 	getSwaggerUIHTML(): string {
+		const swaggerPath = this.config.swagger.path;
+		const apiDocsPath =
+			swaggerPath === "/"
+				? "/api-docs.json"
+				: `${swaggerPath.replace(/\/$/, "")}/api-docs.json`;
+
 		return `
 <!DOCTYPE html>
 <html lang="en">
@@ -765,7 +771,7 @@ export class FileRouter {
 <script>
   window.onload = () => {
     window.ui = SwaggerUIBundle({
-      url: '/api-docs.json',
+      url: '${apiDocsPath}',
       dom_id: '#swagger-ui',
       presets: [
         SwaggerUIBundle.presets.apis,
@@ -789,13 +795,24 @@ export class FileRouter {
 	 * Handle Swagger UI related requests
 	 */
 	async handleSwaggerRequest(pathname: string): Promise<Response | null> {
-		if (pathname === "/") {
+		if (!this.config.swagger.enabled) {
+			return null;
+		}
+
+		const swaggerPath = this.config.swagger.path;
+
+		if (pathname === swaggerPath) {
 			return new Response(this.getSwaggerUIHTML(), {
 				headers: { "Content-Type": "text/html" },
 			});
 		}
 
-		if (pathname === "/api-docs.json") {
+		// API docs should be served at the swagger path + /api-docs.json
+		const apiDocsPath =
+			swaggerPath === "/"
+				? "/api-docs.json"
+				: `${swaggerPath.replace(/\/$/, "")}/api-docs.json`;
+		if (pathname === apiDocsPath) {
 			const openapiSpec = await this.generateOpenAPISpec();
 
 			return Response.json(openapiSpec);
