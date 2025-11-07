@@ -23,10 +23,12 @@ features:
     details: Built with TypeScript and Zod for runtime validation, type safety, and excellent developer experience.
 ---
 
+# Badges
+
 <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin: 2rem 0; flex-wrap: wrap;">
-  <img src="https://img.shields.io/npm/v/koritsu?style=for-the-badge&logo=npm&logoColor=white&label=Latest&color=8e5cd9" alt="NPM Version">
-  <img src="https://img.shields.io/npm/dm/koritsu?style=for-the-badge&logo=npm&color=8e5cd9" alt="NPM Downloads">
-  <img src="https://img.shields.io/github/license/boyer-nicolas/koritsu?style=for-the-badge&color=8e5cd9" alt="License">
+  <img src="https://img.shields.io/npm/v/koritsu?style=for-the-badge&logo=npm&logoColor=white&label=Latest&color=8e5cd9" alt="NPM Version"/>
+  <img src="https://img.shields.io/npm/dm/koritsu?style=for-the-badge&logo=npm&color=8e5cd9" alt="NPM Downloads"/>
+  <img src="https://img.shields.io/github/license/boyer-nicolas/koritsu?style=for-the-badge&color=8e5cd9" alt="License"/>
 </div>
 
 <br/>
