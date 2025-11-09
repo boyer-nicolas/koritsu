@@ -47,7 +47,6 @@
     "dev": "bun run --hot dev/index.ts",
     "lint:fix": "biome check --write .",
     "lint": "biome check",
-    "prepare": "husky",
     "check": "tsc --noEmit",
     "test": "bun test",
     "test:coverage": "bun test && bun run ./scripts/handle-coverage.ts",
