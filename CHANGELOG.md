@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.8
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/0.1.7...v0.1.8)
+
+### 🚀 Enhancements
+
+- Cors ([#43](https://github.com/boyer-nicolas/koritsu/pull/43))
+
+### ❤️ Contributors
+
+- Nicolas Boyer ([@boyer-nicolas](https://github.com/boyer-nicolas))
+
 ## v0.1.7
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/0.1.6...v0.1.7)
