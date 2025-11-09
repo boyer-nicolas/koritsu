@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.10
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.9...v0.1.10)
+
+### 🩹 Fixes
+
+- Fail on publish error ([9f3307e](https://github.com/boyer-nicolas/koritsu/commit/9f3307e))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.1.9
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/0.1.8...v0.1.9)
