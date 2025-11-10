@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.13
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.12...v0.1.13)
+
+### 🏡 Chore
+
+- Made Bun versioning more flexible in CI ([8aa29dc](https://github.com/boyer-nicolas/koritsu/commit/8aa29dc))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.1.12
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.11...v0.1.12)
