@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.1.11
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.10...v0.1.11)
+
+### 🚀 Enhancements
+
+- Export logger ([2b81c21](https://github.com/boyer-nicolas/koritsu/commit/2b81c21))
+
+### 🩹 Fixes
+
+- Manual ci publish ([b444d76](https://github.com/boyer-nicolas/koritsu/commit/b444d76))
+- Release ([cb847e9](https://github.com/boyer-nicolas/koritsu/commit/cb847e9))
+- Release provenance ([e568cbf](https://github.com/boyer-nicolas/koritsu/commit/e568cbf))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.1.10
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.9...v0.1.10)
