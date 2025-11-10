@@ -16,6 +16,7 @@ import {
 	type RouteDefinition,
 	type RouteProps,
 } from "./lib/helpers";
+import { getLogger, type Logger } from "./lib/logger";
 import { FileRouter } from "./lib/router";
 
 export {
@@ -30,6 +31,8 @@ export {
 	type ProxyHandler,
 	type ProxyConfig,
 	type CorsOptions,
+	getLogger,
+	type Logger,
 	createTypedResponse,
 	createRoute,
 	createRouteCollection,
