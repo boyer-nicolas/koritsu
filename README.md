@@ -1,6 +1,18 @@
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/public/assets/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./docs/public/assets/logo.svg">
+    <img src="./docs/public/assets/logo.svg" alt="Koritsu Logo" width="400" height="120">
+  </picture>
+</div>
+
+<div align="center">
+
 # [Koritsu](https://www.npmjs.com/package/koritsu)
 
 > A modern, type-safe file-based routing API framework for Bun with automatic OpenAPI documentation generation.
+
+</div>
 
 [![Coverage](https://github.com/boyer-nicolas/koritsu/actions/workflows/coverage.yaml/badge.svg)](https://github.com/boyer-nicolas/koritsu/actions/workflows/coverage.yaml)
 [![Release](https://github.com/boyer-nicolas/koritsu/actions/workflows/release.yaml/badge.svg)](https://github.com/boyer-nicolas/koritsu/actions/workflows/release.yaml)

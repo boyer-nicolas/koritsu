@@ -6,6 +6,10 @@ hero:
   name: "Koritsu"
   text: "A File-based routing API framework"
   tagline: Built with Bun, featuring automatic OpenAPI documentation generation
+  image:
+    light: /assets/logo.svg
+    dark: /assets/logo-dark.svg
+    alt: Koritsu Logo
   actions:
     - theme: brand
       text: Getting Started

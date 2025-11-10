@@ -121,7 +121,19 @@ export default defineConfig({
 	base: "/",
 	ignoreDeadLinks: [/^http?:\/\/localhost/],
 	lastUpdated: true,
+	head: [
+		[
+			"link",
+			{ rel: "icon", type: "image/svg+xml", href: "/assets/favicon.svg" },
+		],
+		["link", { rel: "alternate icon", href: "/assets/favicon.svg" }],
+		["meta", { name: "theme-color", content: "#8b5cf6" }],
+	],
 	themeConfig: {
+		logo: {
+			light: "/assets/favicon.svg",
+			dark: "/assets/favicon.svg",
+		},
 		search: {
 			provider: "local",
 		},

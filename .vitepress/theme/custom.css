@@ -591,3 +591,48 @@
   border: 1px solid var(--vp-c-gutter);
   border-radius: 8px;
 }
+
+/**
+ * Component: Logo
+ * -------------------------------------------------------------------------- */
+
+.VPNavBarTitle .logo {
+  margin-right: 8px;
+  height: 36px;
+  width: auto;
+}
+
+/* Hero logo responsive sizing */
+.VPHero .VPImage {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.VPHero .VPImage img {
+  max-height: 120px;
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .VPHero .VPImage {
+    max-width: 300px;
+  }
+
+  .VPHero .VPImage img {
+    max-height: 90px;
+  }
+}
+
+@media (max-width: 480px) {
+  .VPHero .VPImage {
+    max-width: 250px;
+  }
+
+  .VPHero .VPImage img {
+    max-height: 75px;
+  }
+}
+
+.container {
+  max-width: 100% !important;
+}
