@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.16
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.15...v0.1.16)
+
 ## v0.1.15
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.14...v0.1.15)
