@@ -669,8 +669,25 @@ export class FileRouter {
 							baseSpec.paths = {};
 						}
 
-						if (!baseSpec.paths[path]) {
-							baseSpec.paths[path] = {};
+						// Apply path prefix if specified
+						let finalPath = path;
+						if (externalSpecConfig.pathPrefix) {
+							// Ensure prefix starts with / and doesn't end with /
+							const prefix = externalSpecConfig.pathPrefix.startsWith("/")
+								? externalSpecConfig.pathPrefix
+								: `/${externalSpecConfig.pathPrefix}`;
+							const cleanPrefix = prefix.endsWith("/")
+								? prefix.slice(0, -1)
+								: prefix;
+
+							// Ensure path starts with /
+							const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+							finalPath = `${cleanPrefix}${cleanPath}`;
+						}
+
+						if (!baseSpec.paths[finalPath]) {
+							baseSpec.paths[finalPath] = {};
 						}
 
 						if (pathItem && typeof pathItem === "object") {
@@ -701,7 +718,8 @@ export class FileRouter {
 								}
 							}
 
-							Object.assign(baseSpec.paths[path], pathItem);
+							// biome-ignore lint/suspicious/noExplicitAny: OpenAPI types are complex
+							Object.assign(baseSpec.paths[finalPath] as any, pathItem);
 						}
 					}
 				}

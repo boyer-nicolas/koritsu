@@ -192,6 +192,12 @@ export const ConfigSchema = z.object({
 							.array(z.string())
 							.optional()
 							.describe("Tags to group external operations under"),
+						pathPrefix: z
+							.string()
+							.optional()
+							.describe(
+								"Path prefix to prepend to all paths from the external spec (e.g., '/api' will transform '/users' to '/api/users')",
+							),
 					}),
 				)
 				.optional()

@@ -1182,5 +1182,191 @@ describe("router.ts", () => {
 			// Restore original fetch
 			global.fetch = originalFetch;
 		});
+
+		test("should apply pathPrefix to external spec paths", async () => {
+			// Mock fetch for JSON response
+			const originalFetch = global.fetch;
+			global.fetch = mock(async () => {
+				return new Response(
+					JSON.stringify({
+						openapi: "3.1.0",
+						info: { title: "External API", version: "1.0.0" },
+						paths: {
+							"/users": {
+								get: {
+									summary: "Get users",
+									responses: { 200: { description: "Success" } },
+								},
+							},
+							"/posts": {
+								get: {
+									summary: "Get posts",
+									responses: { 200: { description: "Success" } },
+								},
+							},
+						},
+					}),
+					{
+						headers: { "content-type": "application/json" },
+						status: 200,
+					},
+				);
+			}) as unknown as typeof fetch;
+
+			const config = validateConfig({
+				server: {
+					routes: {
+						dir: "./dev/routes",
+					},
+				},
+				swagger: {
+					externalSpecs: [
+						{
+							name: "External API",
+							url: "http://example.com/openapi.json",
+							pathPrefix: "/api/v1",
+						},
+					],
+				},
+			});
+			const router = new FileRouter(config);
+
+			const baseSpec = {
+				openapi: "3.1.0" as const,
+				info: { title: "Test API", version: "1.0.0" },
+				paths: {},
+				tags: [] as Array<{ name: string; description: string }>,
+			};
+			const allTags = new Set<string>();
+
+			await router.mergeExternalSpecs(baseSpec, allTags);
+
+			// Paths should be prefixed with /api/v1
+			expect(baseSpec.paths).toHaveProperty("/api/v1/users");
+			expect(baseSpec.paths).toHaveProperty("/api/v1/posts");
+			expect(baseSpec.paths).not.toHaveProperty("/users");
+			expect(baseSpec.paths).not.toHaveProperty("/posts");
+
+			// Restore original fetch
+			global.fetch = originalFetch;
+		});
+
+		test("should handle pathPrefix without leading slash", async () => {
+			// Mock fetch for JSON response
+			const originalFetch = global.fetch;
+			global.fetch = mock(async () => {
+				return new Response(
+					JSON.stringify({
+						openapi: "3.1.0",
+						info: { title: "External API", version: "1.0.0" },
+						paths: {
+							"/test": {
+								get: {
+									summary: "Test endpoint",
+									responses: { 200: { description: "Success" } },
+								},
+							},
+						},
+					}),
+					{
+						headers: { "content-type": "application/json" },
+						status: 200,
+					},
+				);
+			}) as unknown as typeof fetch;
+
+			const config = validateConfig({
+				server: {
+					routes: {
+						dir: "./dev/routes",
+					},
+				},
+				swagger: {
+					externalSpecs: [
+						{
+							name: "External API",
+							url: "http://example.com/openapi.json",
+							pathPrefix: "api", // No leading slash
+						},
+					],
+				},
+			});
+			const router = new FileRouter(config);
+
+			const baseSpec = {
+				openapi: "3.1.0" as const,
+				info: { title: "Test API", version: "1.0.0" },
+				paths: {},
+				tags: [] as Array<{ name: string; description: string }>,
+			};
+			const allTags = new Set<string>();
+
+			await router.mergeExternalSpecs(baseSpec, allTags);
+
+			// Should add leading slash to prefix
+			expect(baseSpec.paths).toHaveProperty("/api/test");
+
+			// Restore original fetch
+			global.fetch = originalFetch;
+		});
+
+		test("should handle pathPrefix with trailing slash", async () => {
+			// Mock fetch for JSON response
+			const originalFetch = global.fetch;
+			global.fetch = mock(async () => {
+				return new Response(
+					JSON.stringify({
+						openapi: "3.1.0",
+						info: { title: "External API", version: "1.0.0" },
+						paths: {
+							"/test": {
+								get: {
+									summary: "Test endpoint",
+									responses: { 200: { description: "Success" } },
+								},
+							},
+						},
+					}),
+					{
+						headers: { "content-type": "application/json" },
+						status: 200,
+					},
+				);
+			}) as unknown as typeof fetch;
+
+			const config = validateConfig({
+				server: {
+					routes: {
+						dir: "./dev/routes",
+					},
+				},
+				swagger: {
+					externalSpecs: [
+						{
+							name: "External API",
+							url: "http://example.com/openapi.json",
+							pathPrefix: "/api/", // Trailing slash
+						},
+					],
+				},
+			});
+			const router = new FileRouter(config);
+
+			const baseSpec = {
+				openapi: "3.1.0" as const,
+				info: { title: "Test API", version: "1.0.0" },
+				paths: {},
+				tags: [] as Array<{ name: string; description: string }>,
+			};
+			const allTags = new Set<string>();
+
+			await router.mergeExternalSpecs(baseSpec, allTags);
+
+			// Should remove trailing slash from prefix
+			expect(baseSpec.paths).toHaveProperty("/api/test");
+
+			// Restore original fetch
+			global.fetch = originalFetch;
+		});
 	});
 });

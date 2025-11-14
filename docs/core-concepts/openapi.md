@@ -70,9 +70,63 @@ new Api({
   swagger: {
     path: "/docs", // Custom Swagger UI path
     enabled: true, // Enable/disable in production
+    externalSpecs: [
+      {
+        url: "https://api.example.com/openapi.json",
+        name: "external-service",
+        tags: ["External"], // Optional: custom tags for grouping
+        pathPrefix: "/api/v1", // Optional: prefix all external paths
+      },
+    ],
   },
 });
 ```
+
+### External OpenAPI Specifications
+
+Merge external OpenAPI specs into your documentation. This is useful for:
+
+- Integrating third-party service documentation (e.g., Better Auth)
+- Documenting microservices in a unified API gateway
+- Including legacy API documentation
+
+#### Configuration Options
+
+- **url** (required): URL to fetch the external OpenAPI spec
+- **name** (required): Identifier for the external spec
+- **tags** (optional): Custom tags to group all external operations
+- **pathPrefix** (optional): Prefix to prepend to all paths from the external spec
+
+#### Path Prefix Example
+
+When using `pathPrefix`, all paths from the external spec are prefixed:
+
+```typescript
+// External spec has: /users, /posts
+externalSpecs: [
+  {
+    url: "https://api.example.com/openapi.json",
+    name: "blog-api",
+    pathPrefix: "/api/v1",
+  },
+];
+// Results in: /api/v1/users, /api/v1/posts
+```
+
+The prefix automatically handles:
+
+- Missing leading slashes (`api` becomes `/api`)
+- Trailing slashes (`/api/` becomes `/api`)
+- Proper path joining (`/api` + `/users` becomes `/api/users`)
+
+#### Supported Formats
+
+External specs can be:
+
+- **JSON**: Standard OpenAPI JSON format
+- **HTML with embedded JSON**: Automatically extracted (useful for Better Auth)
+
+See the [Better Auth integration guide](../integration-guides/better-auth.md) for a complete example.
 
 ## Tags and Organization
 
