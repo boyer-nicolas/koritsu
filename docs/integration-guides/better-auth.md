@@ -159,6 +159,7 @@ const server = new Api({
         url: "http://localhost:8080/auth/openapi",
         name: "better-auth",
         tags: ["Authentication"],
+        pathPrefix: "/auth", // Optional: prefix all Better Auth paths with /auth
       },
     ],
   },
@@ -392,6 +393,21 @@ Better Auth's authentication schemes (cookie-based `apiKeyCookie` and `bearerAut
 ### Custom Tagging
 
 The `tags: ["Authentication"]` configuration groups all Better Auth endpoints under a custom tag in your Swagger UI, making it easy to organize and navigate the documentation.
+
+### Path Prefixing
+
+The optional `pathPrefix` parameter allows you to prefix all paths from the external spec. For example, setting `pathPrefix: "/auth"` will transform Better Auth paths:
+
+- `/sign-in/email` becomes `/auth/sign-in/email`
+- `/get-session` becomes `/auth/get-session`
+
+This is particularly useful when:
+
+- Your API has a base path (e.g., `/api/v1`) and you want external specs to match
+- You want to namespace external endpoints to avoid path conflicts
+- You're documenting a microservices architecture with prefixed routes
+
+The prefix automatically handles leading/trailing slashes, so `/auth`, `auth`, `/auth/`, and `auth/` all produce the same result.
 
 ### How It Works
 

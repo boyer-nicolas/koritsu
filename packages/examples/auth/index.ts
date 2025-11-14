@@ -53,6 +53,7 @@ const server = new Api({
 				url: "http://localhost:8080/auth/openapi",
 				name: "better-auth",
 				tags: ["Authentication"],
+				// pathPrefix: "/auth", // Prefix all Better Auth paths with /auth (requires latest koritsu version)
 			},
 		],
 	},
