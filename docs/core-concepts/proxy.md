@@ -187,6 +187,105 @@ const routingHandler = async ({ request, params, target }) => {
 };
 ```
 
+## Skipping Proxy to Use Local Routes
+
+Handlers can dynamically choose to skip proxying and pass through to the original file-based route by returning `skip: true`. This allows conditional routing between proxy and local implementations:
+
+```typescript
+{
+  pattern: "/api/*",
+  target: "https://external-api.com",
+  handler: async ({ request, params }) => {
+    // Check for a custom header to use local route
+    const useLocal = request.headers.get("x-use-local");
+
+    if (useLocal === "true") {
+      // Skip proxy and use local route file instead
+      return {
+        proceed: false,
+        skip: true, // This makes the request fall through to file-based routing
+      };
+    }
+
+    // Otherwise proceed with proxy
+    return { proceed: true };
+  },
+}
+```
+
+When `skip: true` is returned:
+
+- The proxy is bypassed completely
+- The request continues to the file-based routing system
+- If a matching route file exists (e.g., `routes/api/route.ts`), it will handle the request
+- If no matching route file exists, a 404 is returned
+
+### Use Cases for Skip Flag
+
+1. **Feature Flags**: Route to local implementation when a feature flag is enabled
+
+```typescript
+handler: async ({ request }) => {
+  const featureFlag = await getFeatureFlag("use-local-api");
+  return featureFlag ? { proceed: false, skip: true } : { proceed: true };
+};
+```
+
+2. **A/B Testing**: Randomly route users to different implementations
+
+```typescript
+handler: async ({ request }) => {
+  const userId = request.headers.get("x-user-id");
+  const useLocal = hashUserId(userId) % 2 === 0; // 50/50 split
+  return useLocal ? { proceed: false, skip: true } : { proceed: true };
+};
+```
+
+3. **Development/Testing**: Use local routes in development, proxy in production
+
+```typescript
+handler: async ({ request }) => {
+  const env = process.env.NODE_ENV;
+  return env === "development"
+    ? { proceed: false, skip: true }
+    : { proceed: true };
+};
+```
+
+4. **Gradual Migration**: Route specific users to new local implementation
+
+```typescript
+handler: async ({ request }) => {
+  const userTier = request.headers.get("x-user-tier");
+  // Beta users get local route, others get proxied to old service
+  return userTier === "beta"
+    ? { proceed: false, skip: true }
+    : { proceed: true };
+};
+```
+
+5. **Conditional Overrides**: Use local route for specific paths or parameters
+
+```typescript
+handler: async ({ request, params }) => {
+  const userId = params.param0;
+  // Use local route for admin users, proxy for regular users
+  return userId === "admin"
+    ? { proceed: false, skip: true }
+    : { proceed: true };
+};
+```
+
+### Skip vs Auth-Only Patterns
+
+| Pattern          | Target   | Handler Returns                   | Behavior                            |
+| ---------------- | -------- | --------------------------------- | ----------------------------------- |
+| **Skip**         | Required | `{proceed: false, skip: true}`    | Falls through to file-based routing |
+| **Auth-Only**    | Omitted  | `{proceed: false, response: ...}` | Handler returns response directly   |
+| **Normal Proxy** | Required | `{proceed: true}`                 | Forwards request to target          |
+
+The skip flag is particularly powerful when combined with file-based routes, enabling dynamic routing decisions at runtime without changing configuration.
+
 ## Auth-Only Endpoints (No Proxying)
 
 You can create proxy configurations that handle requests entirely within the handler without forwarding to an external service by omitting the `target` field:
@@ -316,6 +415,9 @@ The framework includes comprehensive tests for:
 7. **Request Transformation**: Modify headers or request data before forwarding
 8. **Mock Services**: Return mock responses during development/testing
 9. **Health Checks**: Handle health/status endpoints locally
+10. **Dynamic Routing**: Use skip flag for A/B testing or feature flags
+11. **Gradual Rollouts**: Route specific users to new local implementations
+12. **Conditional Overrides**: Override proxy behavior based on runtime conditions
 
 ## Performance Considerations
 
