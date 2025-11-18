@@ -276,7 +276,7 @@ export const GET = createRoute({
     });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Protected"],
     summary: "Get user profile",
     responses: {
@@ -350,7 +350,7 @@ export const GET = createRoute({
     });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Admin"],
     summary: "Admin endpoint",
     responses: {

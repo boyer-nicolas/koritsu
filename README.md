@@ -69,7 +69,7 @@ export const GET = createRoute({
     return Response.json({ message: "Hello, world!" });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     summary: "Hello World",
     responses: {
       200: {

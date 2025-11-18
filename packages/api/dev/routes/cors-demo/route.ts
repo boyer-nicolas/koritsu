@@ -11,7 +11,7 @@ export const GET = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["CORS", "Demo"],
 		summary: "CORS demonstration endpoint",
 		responses: {
@@ -36,7 +36,7 @@ export const POST = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["CORS", "Demo"],
 		summary: "CORS POST demonstration",
 		parameters: {

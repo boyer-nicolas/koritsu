@@ -77,6 +77,75 @@ describe("helpers.ts", () => {
 				expect(result.method).toBe(method);
 			}
 		});
+
+		test("should create route with formData responseFormat", () => {
+			const mockHandler = async () => {
+				const formData = new FormData();
+				formData.append("message", "Test response");
+				formData.append("timestamp", new Date().toISOString());
+				return new Response(formData);
+			};
+
+			const routeSpec = {
+				responseFormat: "formData" as const,
+				tags: ["FormData"],
+				summary: "Test form data response",
+				parameters: {
+					body: z.object({
+						message: z.string().describe("Message to echo"),
+					}),
+				},
+				responses: {
+					200: {
+						schema: z.object({
+							message: z.string(),
+							timestamp: z.string(),
+						}),
+					},
+				},
+			};
+
+			const routeProps = {
+				method: "POST" as const,
+				handler: mockHandler,
+				spec: routeSpec,
+			};
+
+			const result = createRoute(routeProps);
+
+			expect(result.method).toBe("POST");
+			expect(typeof result.handler).toBe("function");
+			expect(result.spec).toBeDefined();
+			expect(result.spec?.responseFormat).toBe("formData");
+			expect(result.spec?.tags).toEqual(["FormData"]);
+		});
+
+		test("should create route with text responseFormat", () => {
+			const mockHandler = async () => {
+				return new Response("Plain text response");
+			};
+
+			const textRouteSpec = {
+				responseFormat: "text" as const,
+				summary: "Get plain text",
+				responses: {
+					200: {
+						schema: z.string(),
+					},
+				},
+			};
+
+			const routeProps = {
+				method: "GET" as const,
+				handler: mockHandler,
+				spec: textRouteSpec,
+			};
+
+			const result = createRoute(routeProps);
+
+			expect(result.method).toBe("GET");
+			expect(result.spec?.responseFormat).toBe("text");
+		});
 	});
 
 	describe("zodToOpenAPISchema", () => {
@@ -209,7 +278,7 @@ describe("helpers.ts", () => {
 		test("should convert simple CustomSpec to OpenAPI paths", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					summary: "Success",
 					description: "A simple GET request",
 					responses: {
@@ -234,7 +303,7 @@ describe("helpers.ts", () => {
 		test("should convert CustomSpec with parameters", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					parameters: {
 						path: z.object({
 							id: z.string().describe("The item ID"),
@@ -288,7 +357,7 @@ describe("helpers.ts", () => {
 		test("should convert CustomSpec with header parameters", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					parameters: {
 						headers: z.object({
 							authorization: z.string().describe("Auth token"),
@@ -335,7 +404,7 @@ describe("helpers.ts", () => {
 		test("should handle multiple HTTP methods", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					summary: "Get success",
 					description: "Get response",
 					responses: {
@@ -345,7 +414,7 @@ describe("helpers.ts", () => {
 					},
 				},
 				post: {
-					format: "json",
+					responseFormat: "json",
 					summary: "Post success",
 					description: "Post response",
 					responses: {
@@ -369,7 +438,7 @@ describe("helpers.ts", () => {
 		test("should convert CustomSpec with body parameters", () => {
 			const customSpec: CustomSpec = {
 				post: {
-					format: "json",
+					responseFormat: "json",
 					parameters: {
 						body: z.object({
 							name: z.string().describe("The name of the item"),
@@ -431,7 +500,7 @@ describe("helpers.ts", () => {
 		test("should handle mixed parameters including body", () => {
 			const customSpec: CustomSpec = {
 				post: {
-					format: "json",
+					responseFormat: "json",
 					parameters: {
 						path: z.object({
 							id: z.string().describe("The item ID"),
@@ -521,7 +590,7 @@ describe("helpers.ts", () => {
 		test("should handle tags in CustomSpec", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					tags: ["Users", "Authentication"],
 					summary: "Success",
 					description: "Successful response",
@@ -534,7 +603,7 @@ describe("helpers.ts", () => {
 					},
 				},
 				post: {
-					format: "json",
+					responseFormat: "json",
 					tags: ["Users"],
 					parameters: {
 						body: z.object({
@@ -569,13 +638,181 @@ describe("helpers.ts", () => {
 				expect(pathItem.post.tags).toEqual(["Users"]);
 			}
 		});
+
+		test("should handle formData responseFormat", () => {
+			const customSpec: CustomSpec = {
+				post: {
+					responseFormat: "formData",
+					tags: ["FormData"],
+					summary: "Upload file",
+					description: "Upload a file and return form data response",
+					parameters: {
+						body: z.object({
+							file: z.instanceof(File).describe("File to upload"),
+							message: z.string().describe("Message to include"),
+						}),
+					},
+					responses: {
+						200: {
+							schema: z.object({
+								message: z.string(),
+								filename: z.string(),
+								size: z.number(),
+							}),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			expect(result["/"]).toBeDefined();
+			const pathItem = result["/"];
+			const postOperation = pathItem?.post;
+
+			expect(postOperation).toBeDefined();
+			expect(postOperation?.summary).toBe("Upload file");
+			expect(postOperation?.description).toBe(
+				"Upload a file and return form data response",
+			);
+			expect(postOperation?.tags).toEqual(["FormData"]);
+
+			// Check response content-type is multipart/form-data
+			expect(postOperation?.responses?.["200"]).toBeDefined();
+			const response200 = postOperation?.responses?.[
+				"200"
+			] as OpenAPIV3_1.ResponseObject;
+			expect(response200.content).toBeDefined();
+			expect(response200.content?.["multipart/form-data"]).toBeDefined();
+
+			const formDataContent = response200.content?.["multipart/form-data"];
+			expect(formDataContent?.schema).toEqual({
+				type: "object",
+				properties: {
+					message: {
+						type: "string",
+					},
+					filename: {
+						type: "string",
+					},
+					size: {
+						type: "number",
+					},
+				},
+				required: ["message", "filename", "size"],
+			});
+
+			// Check requestBody content-type is also multipart/form-data
+			expect(postOperation?.requestBody).toBeDefined();
+			const requestBody =
+				postOperation?.requestBody as OpenAPIV3_1.RequestBodyObject;
+			expect(requestBody.content?.["multipart/form-data"]).toBeDefined();
+
+			const requestFormDataContent =
+				requestBody.content?.["multipart/form-data"];
+			expect(requestFormDataContent?.schema).toEqual({
+				type: "object",
+				properties: {
+					file: {
+						type: "object",
+						description: "File to upload",
+					},
+					message: {
+						type: "string",
+						description: "Message to include",
+					},
+				},
+				required: ["file", "message"],
+			});
+		});
+
+		test("should handle text responseFormat", () => {
+			const customSpec: CustomSpec = {
+				get: {
+					responseFormat: "text",
+					summary: "Get plain text",
+					description: "Returns plain text response",
+					responses: {
+						200: {
+							schema: z.string(),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+
+			const pathItem = result["/"];
+			const getOperation = pathItem?.get;
+
+			expect(getOperation?.responses?.["200"]).toBeDefined();
+			const response200 = getOperation?.responses?.[
+				"200"
+			] as OpenAPIV3_1.ResponseObject;
+			expect(response200.content).toBeDefined();
+			expect(response200.content?.["text/plain"]).toBeDefined();
+			expect(response200.content?.["application/json"]).toBeUndefined();
+		});
+
+		test("should handle mixed responseFormats in single spec", () => {
+			const customSpec: CustomSpec = {
+				get: {
+					responseFormat: "json",
+					summary: "Get JSON",
+					responses: {
+						200: {
+							schema: z.object({ message: z.string() }),
+						},
+					},
+				},
+				post: {
+					responseFormat: "formData",
+					summary: "Upload file",
+					responses: {
+						201: {
+							schema: z.object({ file: z.instanceof(File) }),
+						},
+					},
+				},
+				put: {
+					responseFormat: "text",
+					summary: "Update and get status",
+					responses: {
+						200: {
+							schema: z.string(),
+						},
+					},
+				},
+			};
+
+			const result = customSpecToOpenAPI(customSpec);
+			const pathItem = result["/"];
+
+			// Check JSON response
+			const getResponse = pathItem?.get?.responses?.[
+				"200"
+			] as OpenAPIV3_1.ResponseObject;
+			expect(getResponse.content?.["application/json"]).toBeDefined();
+
+			// Check form data response
+			const postResponse = pathItem?.post?.responses?.[
+				"201"
+			] as OpenAPIV3_1.ResponseObject;
+			expect(postResponse.content?.["multipart/form-data"]).toBeDefined();
+
+			// Check text response
+			const putResponse = pathItem?.put?.responses?.[
+				"200"
+			] as OpenAPIV3_1.ResponseObject;
+			expect(putResponse.content?.["text/plain"]).toBeDefined();
+		});
 	});
 
 	describe("generateOpenAPIFromCustomSpec", () => {
 		test("should generate complete OpenAPI document", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					summary: "Success",
 					description: "Successful response",
 					responses: {
@@ -607,7 +844,7 @@ describe("helpers.ts", () => {
 		test("should use default info when not provided", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					summary: "Success",
 					description: "Successful response",
 					responses: {
@@ -629,7 +866,7 @@ describe("helpers.ts", () => {
 	describe("response validation", () => {
 		test("should validate response status against spec", () => {
 			const spec: SpecItem = {
-				format: "json",
+				responseFormat: "json",
 				summary: "OK",
 				description: "OK",
 				responses: {
@@ -660,7 +897,7 @@ describe("helpers.ts", () => {
 
 		test("should throw error for invalid response status", () => {
 			const spec: SpecItem = {
-				format: "json",
+				responseFormat: "json",
 				summary: "OK",
 				description: "OK",
 				responses: {
@@ -685,7 +922,7 @@ describe("helpers.ts", () => {
 
 		test("should validate content types", () => {
 			const spec: SpecItem = {
-				format: "json",
+				responseFormat: "json",
 				summary: "OK",
 				description: "OK",
 				responses: {
@@ -765,7 +1002,7 @@ describe("helpers.ts", () => {
 
 		test("SpecItem should support the new parameter format", () => {
 			const specItem: SpecItem = {
-				format: "json",
+				responseFormat: "json",
 				parameters: {
 					path: z.object({
 						id: z.string(),
@@ -783,7 +1020,7 @@ describe("helpers.ts", () => {
 				},
 			};
 
-			expect(specItem.format).toBe("json");
+			expect(specItem.responseFormat).toBe("json");
 			expect(specItem.parameters?.path).toBeDefined();
 			expect(specItem.parameters?.query).toBeDefined();
 			expect(specItem.responses[200]).toBeDefined();
@@ -794,7 +1031,7 @@ describe("helpers.ts", () => {
 		test("should include operation-level summary and description when provided", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					summary: "Get user information",
 					description: "Retrieves detailed user information by ID",
 					responses: {
@@ -824,7 +1061,7 @@ describe("helpers.ts", () => {
 		test("should fallback to first successful response summary/description when operation-level not provided", () => {
 			const customSpec: CustomSpec = {
 				post: {
-					format: "json",
+					responseFormat: "json",
 					description:
 						"A new user has been created with the provided information",
 					responses: {
@@ -859,7 +1096,7 @@ describe("helpers.ts", () => {
 		test("should prefer 200 response over other status codes for fallback", () => {
 			const customSpec: CustomSpec = {
 				get: {
-					format: "json",
+					responseFormat: "json",
 					description: "User data operations",
 					responses: {
 						404: {
@@ -896,7 +1133,7 @@ describe("helpers.ts", () => {
 		test("should fallback to first response when no successful status codes exist", () => {
 			const customSpec: CustomSpec = {
 				delete: {
-					format: "json",
+					responseFormat: "json",
 					description: "User not found",
 					responses: {
 						404: {
@@ -927,7 +1164,7 @@ describe("helpers.ts", () => {
 		test("should mix operation-level and response-level fallback correctly", () => {
 			const customSpec: CustomSpec = {
 				patch: {
-					format: "json",
+					responseFormat: "json",
 					summary: "Update user", // Operation-level summary provided
 					// No operation-level description, should fallback to response
 					description: "User updated successfully with new information",
@@ -958,7 +1195,7 @@ describe("helpers.ts", () => {
 		test("should work with all successful status codes for fallback", () => {
 			const customSpec: CustomSpec = {
 				put: {
-					format: "json",
+					responseFormat: "json",
 					description: "Request accepted and will be processed asynchronously",
 					responses: {
 						202: {

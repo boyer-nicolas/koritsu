@@ -4,13 +4,10 @@ import { createRoute } from "../../../../src";
 export const GET = createRoute({
 	method: "GET",
 	handler: async () => {
-		return Response.json({
-			message: "Test fixture route",
-			timestamp: new Date().toISOString(),
-		});
+		return Response.json({ message: "Test fixture route" });
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Test"],
 		summary: "Test fixture",
 		description: "Simple test route for testing framework functionality",
@@ -18,7 +15,6 @@ export const GET = createRoute({
 			200: {
 				schema: z.object({
 					message: z.string(),
-					timestamp: z.string(),
 				}),
 			},
 		},

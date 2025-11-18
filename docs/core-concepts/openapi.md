@@ -13,7 +13,7 @@ export const GET = createRoute({
     // Route implementation
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Users"],
     summary: "Get user by ID",
     parameters: {
@@ -57,6 +57,56 @@ const userSchema = z.object({
 
 // Automatically becomes proper OpenAPI schema
 ```
+
+## Response Formats
+
+Specify the expected response format using the `responseFormat` property:
+
+```typescript
+export const GET = createRoute({
+  method: "GET",
+  handler: async () => {
+    return Response.json({ message: "JSON response" });
+  },
+  spec: {
+    responseFormat: "json", // JSON responses
+    // ... other spec properties
+  },
+});
+
+export const POST = createRoute({
+  method: "POST",
+  handler: async () => {
+    return new Response("Plain text response");
+  },
+  spec: {
+    responseFormat: "text", // Plain text responses
+    // ... other spec properties
+  },
+});
+
+export const PUT = createRoute({
+  method: "PUT",
+  handler: async ({ body }) => {
+    // Handle form data
+    const form = new FormData();
+    form.append("status", "success");
+    return new Response(form);
+  },
+  spec: {
+    responseFormat: "formData", // Form data responses
+    // ... other spec properties
+  },
+});
+```
+
+### Supported Formats
+
+- **`"json"`**: JSON responses (most common)
+- **`"text"`**: Plain text responses
+- **`"formData"`**: Multipart form data responses
+
+The response format affects OpenAPI documentation generation and content-type validation in development mode.
 
 ## Configuration
 
@@ -157,7 +207,7 @@ export const GET = createRoute({
     return Response.json({ message: "Success" });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Users", "Authentication"], // Multiple tags supported
     summary: "Get user data",
     description: "Retrieve user information",

@@ -64,7 +64,7 @@ Using Zod schemas for automatic validation and type inference:
 
 ```typescript
 spec: {
-  format: "json",
+  responseFormat: "json",
   parameters: {
     path: z.object({
       id: z.string().describe("User ID")

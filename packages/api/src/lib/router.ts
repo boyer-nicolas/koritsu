@@ -320,11 +320,25 @@ export class FileRouter {
 
 			// Parse request body if present
 			let body: unknown;
-			if (request.headers.get("content-type")?.includes("application/json")) {
+			const contentType = request.headers.get("content-type") || "";
+
+			if (contentType.includes("application/json")) {
 				try {
 					body = await request.json();
 				} catch {
 					// Ignore JSON parsing errors, body will remain undefined
+				}
+			} else if (contentType.includes("multipart/form-data")) {
+				try {
+					const formData = await request.formData();
+					// Convert FormData to a structured object for validation
+					const formBody: Record<string, unknown> = {};
+					for (const [key, value] of formData.entries()) {
+						formBody[key] = value;
+					}
+					body = formBody;
+				} catch {
+					// Ignore FormData parsing errors, body will remain undefined
 				}
 			}
 

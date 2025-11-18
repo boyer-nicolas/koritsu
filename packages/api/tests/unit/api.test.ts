@@ -31,7 +31,7 @@ describe("api.ts", () => {
 					return Response.json({ message: "Test route" });
 				},
 				spec: {
-					format: "json",
+					responseFormat: "json",
 					tags: ["Test"],
 					summary: "Test endpoint",
 					responses: {

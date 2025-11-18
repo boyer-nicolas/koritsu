@@ -16,7 +16,7 @@ export const GET = createRoute({
     return Response.json(users);
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Users"],
     summary: "List users",
     parameters: {
@@ -46,7 +46,7 @@ export const GET = createRoute({
     return Response.json(user);
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Users"],
     summary: "Get user by ID",
     parameters: {
@@ -71,7 +71,7 @@ export const POST = createRoute({
     return Response.json(user, { status: 201 });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Users"],
     summary: "Create new user",
     parameters: {
@@ -103,7 +103,7 @@ export const POST = createRoute({
     return Response.json({ token, user });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Authentication"],
     summary: "User login",
     parameters: {
@@ -145,7 +145,7 @@ export const POST = createRoute({
     return Response.json({ fileName, size: file.size });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Files"],
     summary: "Upload file",
     responses: {
@@ -154,6 +154,62 @@ export const POST = createRoute({
           fileName: z.string(),
           size: z.number(),
         }),
+      },
+      400: { schema: errorSchema },
+    },
+  },
+});
+```
+
+## Form Data Response
+
+```typescript
+// routes/export/route.ts
+export const POST = createRoute({
+  method: "POST",
+  handler: async ({ body }) => {
+    const { format, data } = body;
+
+    // Generate export data
+    const exportData = await generateExport(data, format);
+
+    // Return as FormData for multi-part responses
+    const form = new FormData();
+    form.append(
+      "file",
+      new Blob([exportData], { type: "application/octet-stream" }),
+      `export.${format}`
+    );
+    form.append(
+      "metadata",
+      JSON.stringify({
+        exported_at: new Date().toISOString(),
+        format: format,
+        size: exportData.length,
+      })
+    );
+
+    return new Response(form);
+  },
+  spec: {
+    responseFormat: "formData",
+    tags: ["Export"],
+    summary: "Export data as form",
+    parameters: {
+      body: z.object({
+        format: z.enum(["csv", "json", "xlsx"]),
+        data: z.array(z.record(z.any())),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Export data as multipart form",
+        headers: {
+          "Content-Type": {
+            description: "multipart/form-data",
+            schema: { type: "string" },
+          },
+        },
       },
       400: { schema: errorSchema },
     },
@@ -176,7 +232,7 @@ export const GET = createRoute({
     return Response.json(health);
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["System"],
     summary: "Health check",
     responses: {
