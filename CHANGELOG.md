@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.17
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.16...v0.1.17)
+
+### 🚀 Enhancements
+
+- Handle formData ([#50](https://github.com/boyer-nicolas/koritsu/pull/50))
+
+### ❤️ Contributors
+
+- Nicolas Boyer ([@boyer-nicolas](https://github.com/boyer-nicolas))
+
 ## v0.1.16
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.15...v0.1.16)
