@@ -22,7 +22,7 @@ describe("createRoute with spec validation", () => {
 
 	test("should throw error when response status doesn't match spec", async () => {
 		const mockSpec: SpecItem = {
-			format: "json",
+			responseFormat: "json",
 			summary: "Created",
 			description: "Created successfully",
 			responses: {
@@ -60,7 +60,7 @@ describe("createRoute with spec validation", () => {
 
 	test("should not throw error when response status matches spec", async () => {
 		const mockSpec: SpecItem = {
-			format: "json",
+			responseFormat: "json",
 			summary: "Success",
 			description: "Success response",
 			responses: {

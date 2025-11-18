@@ -29,7 +29,7 @@ export const GET = createRoute({
     return Response.json(data);
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Users"],
     summary: "Get user data",
     parameters: {
@@ -48,6 +48,7 @@ export const GET = createRoute({
 - **Zod schemas for everything**: Parameters, body, responses - all use Zod for validation and OpenAPI generation
 - **Spec-driven development**: Route specs generate OpenAPI docs automatically via `zodToOpenAPISchema()`
 - **Type safety**: `createRoute<TSpec>()` provides type inference from specs
+- **Response format specification**: Use `responseFormat: "json" | "text" | "formData"` to specify expected response content type
 
 ### Parameter Handling
 The framework automatically validates and parses:

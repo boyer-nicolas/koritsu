@@ -14,7 +14,7 @@ export const GET = createRoute({
 		return Response.json(buckets);
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Storage"],
 		summary: "List all storage items",
 		description: "Retrieves a list of all available storage items",
@@ -35,7 +35,7 @@ export const POST = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Storage"],
 		summary: "Create storage item",
 		description: "Create a new storage bucket with the specified name",

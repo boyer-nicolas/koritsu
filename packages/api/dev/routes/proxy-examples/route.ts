@@ -18,7 +18,7 @@ export const GET = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Examples"],
 		summary: "Proxy examples info",
 		description:

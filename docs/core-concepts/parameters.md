@@ -40,7 +40,7 @@ export const GET = createRoute({
     return Response.json(users);
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     summary: "Get user by ID with optional filters",
     description: "User data with filters applied",
     parameters: {
@@ -91,7 +91,7 @@ export const POST = createRoute({
     return Response.json(newUser, { status: 201 });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     summary: "Create a new user",
     description: "Creates a new user with the provided information",
     parameters: {
@@ -216,7 +216,7 @@ export const POST = createRoute({
     return Response.json(newUser, { status: 201 });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     summary: "Create a new user",
     description: "Creates a new user with the provided information",
     parameters: {
@@ -272,7 +272,7 @@ export const PUT = createRoute({
     return Response.json(updatedUser);
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     summary: "Update an existing user",
     description: "Updates user information with the provided data",
     parameters: {
@@ -503,7 +503,7 @@ export const GET = createRoute({
     }
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     summary: "Get user by ID with optional includes",
     description: "Fetches user data along with requested related information",
     parameters: {

@@ -315,7 +315,7 @@ type ExtractBodyType<TSpec extends SpecItem> = TSpec["parameters"] extends {
 	: unknown;
 
 export type SpecItem = {
-	format: "json" | "text";
+	responseFormat: "json" | "text" | "formData";
 	tags?: string[];
 	summary?: string;
 	description?: string;
@@ -502,6 +502,24 @@ function generateResponseDescription(statusCode: number): string {
 }
 
 /**
+ * Maps response format to corresponding MIME type
+ */
+function getContentTypeForFormat(
+	responseFormat: "json" | "text" | "formData",
+): string {
+	switch (responseFormat) {
+		case "json":
+			return "application/json";
+		case "text":
+			return "text/plain";
+		case "formData":
+			return "multipart/form-data";
+		default:
+			return "application/json"; // Default fallback
+	}
+}
+
+/**
  * Converts a CustomSpec to OpenAPI 3.1 PathItemObject format
  */
 export function customSpecToOpenAPI(
@@ -523,7 +541,7 @@ export function customSpecToOpenAPI(
 			responses[status] = {
 				description: generateResponseDescription(Number(status)),
 				content: {
-					[specItem.format === "json" ? "application/json" : "text/plain"]: {
+					[getContentTypeForFormat(specItem.responseFormat)]: {
 						schema: zodToOpenAPISchema(responseSpec.schema),
 					},
 				},
@@ -644,7 +662,7 @@ export function customSpecToOpenAPI(
 				operationObject.requestBody = {
 					required: true,
 					content: {
-						[specItem.format === "json" ? "application/json" : "text/plain"]: {
+						[getContentTypeForFormat(specItem.responseFormat)]: {
 							schema: zodToOpenAPISchema(bodySchema),
 						},
 					},

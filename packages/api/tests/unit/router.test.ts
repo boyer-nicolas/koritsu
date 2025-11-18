@@ -335,7 +335,7 @@ describe("router.ts", () => {
 					method: "GET",
 					handler: async () => Response.json({}),
 					spec: {
-						format: "json",
+						responseFormat: "json",
 						responses: {
 							200: {
 								description: "Success",
@@ -375,7 +375,7 @@ describe("router.ts", () => {
 					method: "GET",
 					handler: async () => Response.json({}),
 					spec: {
-						format: "json",
+						responseFormat: "json",
 						responses: {
 							200: {
 								summary: "Test endpoint",
@@ -422,7 +422,7 @@ describe("router.ts", () => {
 					method: "GET",
 					handler: async () => Response.json({}),
 					spec: {
-						format: "json",
+						responseFormat: "json",
 						tags: ["Users", "Authentication"],
 						responses: {
 							200: {
@@ -437,7 +437,7 @@ describe("router.ts", () => {
 					method: "POST",
 					handler: async () => Response.json({}),
 					spec: {
-						format: "json",
+						responseFormat: "json",
 						tags: ["Users"],
 						responses: {
 							201: {
@@ -455,7 +455,7 @@ describe("router.ts", () => {
 					method: "GET",
 					handler: async () => Response.json({}),
 					spec: {
-						format: "json",
+						responseFormat: "json",
 						tags: ["Health"],
 						responses: {
 							200: {
@@ -631,7 +631,7 @@ describe("router.ts", () => {
 					method: "GET",
 					handler: async () => Response.json({}),
 					spec: {
-						format: "json",
+						responseFormat: "json",
 						responses: {
 							200: {
 								summary: "Test endpoint",

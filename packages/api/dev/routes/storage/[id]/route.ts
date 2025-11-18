@@ -14,7 +14,7 @@ export const GET = createRoute({
 		return Response.json(bucket);
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Storage"],
 		summary: "Get storage bucket details",
 		description:

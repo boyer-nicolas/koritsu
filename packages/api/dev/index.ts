@@ -2,7 +2,7 @@ import { Api } from "../src";
 
 new Api({
 	server: {
-		port: 8080,
+		port: 3001,
 		routes: {
 			dir: "./dev/routes",
 			basePath: "/",

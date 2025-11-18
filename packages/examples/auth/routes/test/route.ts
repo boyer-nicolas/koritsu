@@ -3,23 +3,26 @@ import { z } from "zod";
 
 const testResponseSchema = z.object({
 	message: z.string(),
+	method: z.string(),
 	timestamp: z.string(),
+	url: z.string(),
 	environment: z.string(),
 	status: z.literal("ok"),
 });
-
 export const GET = createRoute({
 	method: "GET",
-	handler: async () => {
+	handler: async ({ request }) => {
 		return Response.json({
-			message: "Test endpoint is working",
+			message: "Hello world!",
+			method: "GET",
 			timestamp: new Date().toISOString(),
+			url: request.url,
 			environment: process.env.NODE_ENV || "development",
-			status: "ok",
+			status: "ok" as const,
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Test"],
 		summary: "Test endpoint",
 		description:

@@ -46,7 +46,7 @@ export const GET = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Protected", "Dashboard"],
 		summary: "Get user dashboard",
 		description: "Returns dashboard data for authenticated user",

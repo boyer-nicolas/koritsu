@@ -16,7 +16,7 @@ export const GET = createRoute({
     return Response.json({ message: "Hello World!" });
   },
   spec: {
-    format: "json",
+    responseFormat: "json",
     tags: ["Users"],
     summary: "Get user data",
     responses: {

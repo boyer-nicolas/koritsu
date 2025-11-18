@@ -8,7 +8,7 @@ export const GET = createRoute({
 		return new Response("OK");
 	},
 	spec: {
-		format: "text",
+		responseFormat: "text",
 		tags: ["Health"],
 		summary: "Service is healthy",
 		description: "Health check endpoint that returns service status",
@@ -31,7 +31,7 @@ export const POST = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Health"],
 		summary: "Echo message",
 		description: "Echo back a message",

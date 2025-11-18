@@ -35,7 +35,7 @@ export const GET = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Protected"],
 		summary: "Get user profile",
 		description:

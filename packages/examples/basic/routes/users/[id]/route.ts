@@ -18,7 +18,7 @@ export const GET = createRoute({
 		return Response.json(user);
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Users"],
 		summary: "Get user by ID",
 		description: "Retrieve a specific user by their unique identifier",
@@ -58,7 +58,7 @@ export const PUT = createRoute({
 		return Response.json(updatedUser);
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Users"],
 		summary: "Update user",
 		description: "Update an existing user's information",

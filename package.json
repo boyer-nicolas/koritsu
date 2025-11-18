@@ -10,7 +10,7 @@
     "@types/bun": "^1.3.2",
     "husky": "^9.1.7",
     "openapi-types": "^12.1.3",
-    "vitepress": "^2.0.0-alpha.12"
+    "vitepress": "^2.0.0-alpha.13"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
@@ -26,7 +26,13 @@
     "check:ci": "act --workflows .github/workflows/ci.yaml --pull=false",
     "prepare": "husky",
     "check": "tsc --project tsconfig.json",
-    "test": "bun run --workspaces test",
+    "test": "bun run test:api && bun run test:examples",
+    "test:api": "cd packages/api && bun test",
+    "test:examples": "bun run test:basic-example",
+    "test:basic-example": "cd packages/examples/basic && bun test",
+    "test:auth-example": "cd packages/examples/auth && bun test",
+    "test:all-workspaces": "bun run --workspaces test",
+    "test:coverage": "cd packages/api && bun run test:coverage",
     "generate:config": "bun run ./scripts/generate-config.ts",
     "publish:manual": "gh workflow run release.yaml",
     "docs:dev": "vitepress dev",

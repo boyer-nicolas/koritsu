@@ -7,7 +7,7 @@ export const GET = createRoute({
 		return new Response("OK");
 	},
 	spec: {
-		format: "text",
+		responseFormat: "text",
 		tags: ["Utilities"],
 		summary: "Health check",
 		description: "Checks the health status of the storage service",

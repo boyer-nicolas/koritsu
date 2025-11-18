@@ -34,7 +34,7 @@ export const GET = createRoute({
 		});
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Users"],
 		summary: "Get all users",
 		description: "Retrieve all users with optional filtering and pagination",
@@ -86,7 +86,7 @@ export const POST = createRoute({
 		return Response.json(newUser, { status: 201 });
 	},
 	spec: {
-		format: "json",
+		responseFormat: "json",
 		tags: ["Users"],
 		summary: "Create user",
 		description: "Create a new user with the provided information",
