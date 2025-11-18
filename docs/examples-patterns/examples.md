@@ -127,39 +127,45 @@ export const POST = createRoute({
 
 ## File Upload Example
 
-```typescript
+````typescript
 // routes/upload/route.ts
 export const POST = createRoute({
   method: "POST",
-  handler: async ({ request }) => {
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
+  handler: async ({ body }) => {
+    // Use the pre-parsed body instead of request.formData()
+    const { file, description } = body;
 
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       return Response.json({ error: "No file provided" }, { status: 400 });
     }
 
     const buffer = await file.arrayBuffer();
     const fileName = await saveFile(buffer, file.name);
 
-    return Response.json({ fileName, size: file.size });
+    return Response.json({
+      fileName,
+      size: file.size,
+      description: description || "No description provided"
+    });
   },
   spec: {
     responseFormat: "json",
     tags: ["Files"],
     summary: "Upload file",
+    parameters: {
+      body: z.object({
+        file: z.instanceof(File).describe("File to upload"),
+        description: z.string().optional().describe("Optional file description"),
+      }),
+    },
     responses: {
       200: {
         schema: z.object({
           fileName: z.string(),
           size: z.number(),
-        }),
-      },
-      400: { schema: errorSchema },
-    },
-  },
-});
-```
+          description: z.string(),
+        }),\n      },\n      400: { schema: errorSchema },\n    },\n  },\n});\n```\n\n> **⚠️ Important Note about Form Data**: Always use the pre-parsed `body` parameter instead of calling `request.formData()` directly. The framework automatically handles form data parsing and calling `request.formData()` will result in a \"body already used\" error since the request stream can only be consumed once. See [Form Data and File Uploads](../core-concepts/parameters.md#form-data-and-file-uploads) for detailed examples.\n\n## Form Data Response
+````
 
 ## Form Data Response
 

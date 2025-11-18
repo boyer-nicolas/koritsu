@@ -619,9 +619,135 @@ export const GET = createRoute({
    status: z.enum(["active", "inactive", "suspended"]);
    ```
 
+## Form Data and File Uploads
+
+When handling `multipart/form-data` requests (like file uploads), the framework automatically parses the form data and provides it through the `body` parameter. **Never call `request.formData()` directly** as this will cause a "body already used" error.
+
+### File Upload Example
+
+```typescript
+// routes/upload/route.ts
+export const POST = createRoute({
+  method: "POST",
+  handler: async ({ body }) => {
+    // ✅ Use pre-parsed body - files are preserved as File objects
+    const { file, metadata } = body;
+
+    if (!file || !(file instanceof File)) {
+      return Response.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    // Process the file
+    const buffer = await file.arrayBuffer();
+    const savedPath = await saveFile(buffer, file.name);
+
+    return Response.json({
+      filename: file.name,
+      size: file.size,
+      path: savedPath,
+      metadata,
+    });
+  },
+  spec: {
+    responseFormat: "json",
+    tags: ["Files"],
+    summary: "Upload file with metadata",
+    parameters: {
+      body: z.object({
+        file: z.instanceof(File).describe("File to upload"),
+        metadata: z
+          .object({
+            title: z.string().describe("File title"),
+            category: z.string().optional().describe("File category"),
+          })
+          .describe("File metadata"),
+      }),
+    },
+    responses: {
+      200: {
+        schema: z.object({
+          filename: z.string(),
+          size: z.number(),
+          path: z.string(),
+          metadata: z.object({
+            title: z.string(),
+            category: z.string().optional(),
+          }),
+        }),
+      },
+      400: { schema: errorSchema },
+    },
+  },
+});
+```
+
+### Multiple File Upload
+
+```typescript
+export const POST = createRoute({
+  method: "POST",
+  handler: async ({ body }) => {
+    const { files, description } = body;
+
+    if (!files || files.length === 0) {
+      return Response.json({ error: "No files provided" }, { status: 400 });
+    }
+
+    const results = await Promise.all(
+      files.map(async (file) => ({
+        filename: file.name,
+        size: file.size,
+        path: await saveFile(await file.arrayBuffer(), file.name),
+      }))
+    );
+
+    return Response.json({ files: results, description });
+  },
+  spec: {
+    parameters: {
+      body: z.object({
+        files: z.array(z.instanceof(File)).describe("Files to upload"),
+        description: z.string().optional().describe("Upload description"),
+      }),
+    },
+    // ... responses
+  },
+});
+```
+
+### Key Points for Form Data
+
+- **Always use the `body` parameter** - don't call `request.formData()`
+- **File objects are preserved** - access them directly from `body`
+- **Other form fields** are available as strings or their parsed types
+- **Define your expected structure** using Zod schemas for validation
+- **Type safety is maintained** - files are typed as `File` objects
+
+### Common Anti-Patterns to Avoid
+
+```typescript
+// ❌ DON'T do this - causes "body already used" error
+export const POST = createRoute({
+  handler: async ({ request }) => {
+    const formData = await request.formData(); // This will fail!
+    // ...
+  },
+});
+
+// ❌ DON'T do this - bypasses validation and type safety
+export const POST = createRoute({
+  handler: async ({ request }) => {
+    // This doesn't work because body is already consumed
+    const json = await request.json(); // This will also fail!
+    // ...
+  },
+});
+```
+
 The framework automatically:
 
-- Extracts the `id` parameter from the URL path
-- Validates it against the Zod schema
-- Generates OpenAPI documentation with proper parameter definitions
+- Extracts parameters from the URL path, query string, headers, and request body
+- Validates them against Zod schemas with detailed error messages
+- Parses form data and preserves File objects for uploads
+- Generates comprehensive OpenAPI documentation
 - Provides type-safe access in your route handlers
