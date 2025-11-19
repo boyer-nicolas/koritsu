@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.1.18
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.17...v0.1.18)
+
+### 🚀 Enhancements
+
+- MaxRequestBodySize ([ac56c3a](https://github.com/boyer-nicolas/koritsu/commit/ac56c3a))
+
+### 🩹 Fixes
+
+- Docs ([3671e8d](https://github.com/boyer-nicolas/koritsu/commit/3671e8d))
+
+### ❤️ Contributors
+
+- Nicolas Boyer <boyer63nicolas@gmail.com>
+
 ## v0.1.17
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.16...v0.1.17)
