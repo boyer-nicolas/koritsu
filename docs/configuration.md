@@ -21,7 +21,8 @@ new Server({
       "dir": "./static",
       "enabled": false,
       "basePath": "/static"
-    }
+    },
+    "maxRequestBodySize": 1048576
   },
   "proxy": {
     "enabled": false,

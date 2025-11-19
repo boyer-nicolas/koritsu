@@ -45,6 +45,7 @@ export class Api {
 		return {
 			port: this.config.server.port,
 			hostname: this.config.server.host,
+			maxRequestBodySize: this.config.server.maxRequestBodySize,
 			async fetch(request) {
 				const startTime = Date.now();
 				const url = new URL(request.url);

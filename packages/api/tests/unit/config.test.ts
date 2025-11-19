@@ -19,6 +19,7 @@ describe("config.ts", () => {
 					port: 3000,
 					host: "localhost",
 					logLevel: "info",
+					maxRequestBodySize: 1048576,
 					routes: {
 						basePath: "/",
 						dir: "./routes",
@@ -86,6 +87,7 @@ describe("config.ts", () => {
 					server: {
 						port: 8080,
 						host: "0.0.0.0",
+						maxRequestBodySize: 1048576,
 						logLevel: "info",
 						routes: {
 							dir: "./routes",
@@ -171,6 +173,7 @@ describe("config.ts", () => {
 			expect(config).toEqual({
 				server: {
 					port: 8080,
+					maxRequestBodySize: 1048576,
 					host: "0.0.0.0",
 					logLevel: "info",
 					routes: {

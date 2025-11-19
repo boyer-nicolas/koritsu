@@ -90,6 +90,10 @@ export const ConfigSchema = z.object({
 				.pipe(z.number("Please provide a valid port number").min(0).max(65535))
 				.default(8080),
 			host: z.string("Please provide a valid host").default("0.0.0.0"),
+			maxRequestBodySize: numberFromString
+				.pipe(z.number().min(0))
+				.default(1048576) // 1 MB
+				.describe("Maximum request body size in bytes"),
 			logLevel: z
 				.enum(
 					["debug", "info", "warning", "error", "trace", "fatal"],
@@ -122,6 +126,7 @@ export const ConfigSchema = z.object({
 			logLevel: "info",
 			routes: { dir: "./routes", basePath: "/" },
 			static: { dir: "./static", enabled: false, basePath: "/static" },
+			maxRequestBodySize: 1048576,
 		}),
 	proxy: z
 		.object({
