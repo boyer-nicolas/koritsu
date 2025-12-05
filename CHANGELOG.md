@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.19
+
+[compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.18...v0.1.19)
+
+### 🏡 Chore
+
+- **deps-dev:** Bump drizzle-kit from 0.31.6 to 0.31.7 ([#55](https://github.com/boyer-nicolas/koritsu/pull/55))
+- **deps-dev:** Bump vitepress from 2.0.0-alpha.13 to 2.0.0-alpha.15 ([#54](https://github.com/boyer-nicolas/koritsu/pull/54))
+
 ## v0.1.18
 
 [compare changes](https://github.com/boyer-nicolas/koritsu/compare/v0.1.17...v0.1.18)
