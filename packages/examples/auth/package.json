@@ -15,7 +15,7 @@
     "test:coverage": "bun test --coverage"
   },
   "dependencies": {
-    "better-auth": "^1.4.1",
+    "better-auth": "^1.4.6",
     "drizzle-orm": "^0.44.7",
     "koritsu": "workspace:*",
     "zod": "^4.1.13"
