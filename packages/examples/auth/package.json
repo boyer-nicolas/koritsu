@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "better-auth": "^1.4.1",
-    "drizzle-orm": "^0.45.0",
+    "drizzle-orm": "^0.45.1",
     "koritsu": "workspace:*",
     "zod": "^4.2.1"
   },
